@@ -1,0 +1,115 @@
+==================================================================
+GLOBALTECH INDUSTRIES LTD. - NETWORK SECURITY POLICY DOCUMENT
+Comprehensive Security Implementation for 20-Branch Enterprise WAN
+==================================================================
+
+1. PHYSICAL SECURITY
+==================================================================
+- Server room (VLAN 70) restricted to authorized IT personnel only.
+- All unused switch ports are administratively SHUTDOWN.
+- Port security with sticky MAC addresses on all access ports.
+- Maximum 2 MAC addresses per port (1 for servers).
+- Violation mode: RESTRICT (log + drop) for user ports.
+- Violation mode: SHUTDOWN (err-disable) for server and unused ports.
+
+2. NETWORK SEGMENTATION (VLANs)
+==================================================================
+9 VLANs at HQ segregate departments:
+  VLAN 10: Administration     VLAN 50: Security/NOC
+  VLAN 20: Finance            VLAN 60: Management (Network Devices)
+  VLAN 30: Human Resources    VLAN 70: Server Farm
+  VLAN 40: Information Tech   VLAN 80: Guest Network
+                              VLAN 90: Wireless (HQ)
+
+Branch offices use a flat /24 subnet per branch.
+Inter-VLAN routing controlled by CORE1/CORE2 with HSRP.
+
+3. ACCESS CONTROL LISTS (ACLs)
+==================================================================
+
+A) Branch Security ACL (applied on each branch router GigabitEthernet0/0 IN):
+   - DENY access to Management VLAN 60 (prevents branch users from
+     managing network devices).
+   - PERMIT DNS (port 53) to DNS server only.
+   - PERMIT DHCP (port 67) to DHCP server only.
+   - PERMIT HTTP/HTTPS (ports 80, 443) to Web server only.
+   - PERMIT FTP (ports 20, 21) to File server only.
+   - PERMIT SMTP/POP3 (ports 25, 110) to Mail server only.
+   - PERMIT NTP (port 123) to NTP server only.
+   - PERMIT ICMP for troubleshooting.
+   - PERMIT all other inter-branch traffic.
+
+B) Guest VLAN ACL (on HQ-EDGE-R1):
+   - PERMIT DNS and Web access only.
+   - DENY all internal department and branch networks.
+   - Guests cannot access Finance, HR, Admin, or Server VLANs.
+
+C) Finance VLAN protection (recommended extension):
+   - Only permit Finance VLAN to access specific server services.
+   - Deny direct access from Guest and Branch networks to Finance.
+
+4. SSH-ONLY MANAGEMENT
+==================================================================
+- All routers and managed switches configured for SSH version 2.
+- RSA key modulus: 2048 bits.
+- Telnet is DISABLED (transport input ssh only).
+- Local authentication with privilege 15 admin account.
+- Console port protected with password.
+- VTY session timeout: 10 minutes.
+- Login attempts are logged via syslog.
+- All passwords encrypted (service password-encryption).
+- Strong enable secret on all devices.
+
+5. NAT/PAT (Network Address Translation)
+==================================================================
+- HQ-EDGE-R1 performs PAT (overload) for Internet access.
+- Inside networks: 10.10.0.0/16 (HQ) + 10.1.0.0/16 (Branches)
+- Outside interface: GigabitEthernet0/2 (203.0.113.2)
+- ISP gateway: 203.0.113.1
+- Internal IP addresses are hidden from the Internet.
+
+6. IPSec VPN ENCRYPTION
+==================================================================
+- Site-to-site IPSec tunnel between HQ-EDGE-R1 and BR01-R (demo).
+- ISAKMP Policy: AES encryption, SHA hash, pre-shared key, DH Group 2.
+- Transform Set: ESP-AES + ESP-SHA-HMAC, tunnel mode.
+- Encrypts all traffic between HQ (10.10.0.0/16) and BR01 (10.1.1.0/24).
+- Note: In production, all 20 branches would have IPSec tunnels.
+  Packet Tracer demo uses one representative tunnel.
+
+7. WIRELESS SECURITY
+==================================================================
+- All 22 APs use WPA2-PSK (AES) authentication.
+- Unique SSID and passphrase per location.
+- HQ wireless on dedicated VLAN 90 (separated from wired traffic).
+- Channel staggering (1, 6, 11) to prevent co-channel interference.
+- Guest wireless at HQ restricted by ACL (web access only).
+- In production: upgrade to WPA3-Enterprise with RADIUS/802.1X.
+
+8. DHCP SNOOPING
+==================================================================
+- Enabled on HQ core switches for VLANs 10-90.
+- Trunk uplinks marked as trusted ports.
+- Prevents rogue DHCP server attacks on the HQ LAN.
+- Branch switches: recommended to enable on VLAN 1.
+
+9. SPANNING TREE PROTECTION
+==================================================================
+- PortFast enabled on all access ports (faster convergence).
+- Unused ports are shutdown (prevents unauthorized topology changes).
+- In production: enable BPDU Guard and Root Guard on access ports.
+
+10. LOGGING AND MONITORING
+==================================================================
+- All devices send syslog messages to SERVER-06 (10.10.70.60).
+- NTP synchronization from SERVER-06 ensures consistent timestamps.
+- Timestamps on log messages (service timestamps log datetime msec).
+- Syslog captures: link up/down, ACL violations, login attempts,
+  port security violations, OSPF neighbor changes.
+
+11. BANNER WARNINGS
+==================================================================
+- All devices display legal warning banner at login.
+- Message: "UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!"
+- Satisfies legal notice requirements for prosecution.
+==================================================================

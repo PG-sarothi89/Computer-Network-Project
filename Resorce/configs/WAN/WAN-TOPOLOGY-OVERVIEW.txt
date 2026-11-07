@@ -1,0 +1,94 @@
+==================================================================
+GLOBALTECH INDUSTRIES LTD. - WAN TOPOLOGY OVERVIEW
+20-Branch Enterprise WAN Architecture
+==================================================================
+
+TOPOLOGY TYPE: Hub-and-Spoke with Partial Mesh Redundancy
+ROUTING PROTOCOL: OSPF (Process ID 10, Area 0)
+WAN MEDIUM: Serial point-to-point links (simulated in Packet Tracer)
+
+==================================================================
+HIGH-LEVEL ARCHITECTURE
+==================================================================
+
+                         [ISP CLOUD]
+                             |
+                        203.0.113.0/30
+                             |
+                       [HQ-EDGE-R1] -------- [HQ-EDGE-R2]
+                        (Primary)              (Secondary)
+                       /    |     \            /    |     \
+                      /     |      \          /     |      \
+             [BR01] [BR02]...[BR10]   [BR11] [BR12]...[BR20]
+               |                        |
+          (+ Backup to R2)         (Primary to R2)
+
+HQ Internal:
+  [HQ-EDGE-R1] <-> [HQ-CORE1] <-trunk-> [HQ-ACCESS-SW1] <-> PCs/Servers
+  [HQ-EDGE-R2] <-> [HQ-CORE2] <-trunk-> [HQ-ACCESS-SW2] <-> PCs/APs
+                    CORE1 <--> CORE2 (inter-core link + HSRP)
+
+==================================================================
+WAN LINK DISTRIBUTION
+==================================================================
+
+HQ-EDGE-R1 (Primary WAN Router):
+  - 10 Primary WAN links to BR01 through BR10
+  - NAT/PAT to ISP
+  - IPSec VPN termination (BR01 tunnel)
+  - Redistributes default route into OSPF
+
+HQ-EDGE-R2 (Secondary WAN Router):
+  - 10 Primary WAN links to BR11 through BR20
+  - 5 Backup WAN links to BR01 through BR05
+  - No direct ISP connection (reaches Internet via CORE <-> R1)
+
+==================================================================
+OSPF COST DESIGN
+==================================================================
+
+Primary WAN links:  OSPF cost = 10 (preferred path)
+Backup WAN links:   OSPF cost = 100 (failover path)
+
+When a primary link fails:
+1. OSPF detects neighbor loss (dead interval timeout).
+2. SPF recalculation selects the backup path (cost 100).
+3. Traffic reroutes automatically through HQ-EDGE-R2.
+4. When primary recovers, OSPF reconverges to the lower-cost path.
+
+==================================================================
+REDUNDANCY FEATURES
+==================================================================
+
+Layer         Mechanism          Coverage
+-----------   ----------------   ----------------------------------
+L3 Gateway    HSRP               HQ VLANs (CORE1 active, CORE2 standby)
+L3 Routing    OSPF multi-path    BR01-BR05 have dual WAN links
+L3 Edge       Dual edge routers  HQ-EDGE-R1 + HQ-EDGE-R2
+L2 Core       Dual core switches CORE1 + CORE2 with trunk to both
+
+==================================================================
+PACKET TRACER IMPLEMENTATION NOTES
+==================================================================
+
+1. ADDING SERIAL INTERFACES:
+   HQ Edge routers need multiple serial ports. In Packet Tracer:
+   - Power off the router (Physical tab -> power button).
+   - Drag HWIC-2T modules into available slots (each adds 2 serial ports).
+   - For 10+ serial ports, use NM-4A/S modules or multiple HWIC-2T.
+   - Power on and configure.
+
+2. CLOUD DEVICE (Alternative):
+   Instead of direct serial connections, use a Cloud-PT device:
+   - Place Cloud-PT as the WAN backbone.
+   - Connect all branch routers and HQ edge routers to the cloud.
+   - In Cloud config, map each branch port to the corresponding HQ port.
+   - This simplifies wiring but the IP configs remain the same.
+
+3. TESTING WAN FAILOVER:
+   - Bring down BR01 primary link: shut interface Serial0/0/0 on BR01-R
+   - Verify: show ip route on BR01-R shows backup path via 172.16.101.x
+   - Ping HQ servers from BR01 PC - should still work
+   - Bring primary back up: no shut -> OSPF reconverges to primary
+
+==================================================================

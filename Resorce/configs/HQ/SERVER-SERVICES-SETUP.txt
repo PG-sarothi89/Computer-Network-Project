@@ -1,0 +1,142 @@
+==================================================================
+GLOBALTECH INDUSTRIES LTD. - HQ SERVER ROOM SERVICES GUIDE
+Subnet: 10.10.70.0/24 (VLAN 70 - SERVERS)
+Gateway (HSRP VIP): 10.10.70.1 | Subnet Mask: 255.255.255.0
+DNS Server: 10.10.70.20
+==================================================================
+
+------------------------------------------------------------------
+SERVER-01: CENTRAL DHCP SERVER
+------------------------------------------------------------------
+IP Address:     10.10.70.10
+Subnet Mask:    255.255.255.0
+Default GW:     10.10.70.1
+DNS Server:     10.10.70.20
+
+Cisco Packet Tracer Service Configuration:
+1. Open SERVER-01 -> Config -> Services -> DHCP -> Set Service ON.
+2. Pool Configuration Details:
+
+Pool Name: serverPool (Default)
+  - Default Gateway: 10.10.70.1
+  - DNS Server: 10.10.70.20
+  - Start IP: 10.10.70.100 | Mask: 255.255.255.0 | Max Users: 50
+
+Pool Name: BR01-CHATTOGRAM
+  - Default Gateway: 10.1.1.1
+  - DNS Server: 10.10.70.20
+  - Start IP: 10.1.1.10 | Mask: 255.255.255.0 | Max Users: 100
+
+Pool Name: BR02-RAJSHAHI
+  - Default Gateway: 10.1.2.1
+  - DNS Server: 10.10.70.20
+  - Start IP: 10.1.2.10 | Mask: 255.255.255.0 | Max Users: 100
+
+Pool Name: BR03-KHULNA
+  - Default Gateway: 10.1.3.1
+  - DNS Server: 10.10.70.20
+  - Start IP: 10.1.3.10 | Mask: 255.255.255.0 | Max Users: 100
+
+Pool Name: BR04-SYLHET
+  - Default Gateway: 10.1.4.1
+  - DNS Server: 10.10.70.20
+  - Start IP: 10.1.4.10 | Mask: 255.255.255.0 | Max Users: 100
+
+Pool Name: BR05-BARISHAL
+  - Default Gateway: 10.1.5.1
+  - DNS Server: 10.10.70.20
+  - Start IP: 10.1.5.10 | Mask: 255.255.255.0 | Max Users: 100
+
+(For BR06 through BR20, add corresponding pools with
+ Gateway: 10.1.X.1, DNS: 10.10.70.20, Start IP: 10.1.X.10)
+
+------------------------------------------------------------------
+SERVER-02: CENTRAL DNS SERVER
+------------------------------------------------------------------
+IP Address:     10.10.70.20
+Subnet Mask:    255.255.255.0
+Default GW:     10.10.70.1
+DNS Server:     10.10.70.20
+
+Cisco Packet Tracer Service Configuration:
+1. Open SERVER-02 -> Services -> DNS -> Set Service ON.
+2. Resource Records (Type A):
+   dns.globaltech.local       -> 10.10.70.20
+   files.globaltech.local     -> 10.10.70.30
+   mail.globaltech.local      -> 10.10.70.40
+   www.globaltech.local       -> 10.10.70.50
+   ntp.globaltech.local       -> 10.10.70.60
+   globaltech.local           -> 10.10.70.50
+
+------------------------------------------------------------------
+SERVER-03: AUTHENTICATED FTP / FILE SERVER
+------------------------------------------------------------------
+IP Address:     10.10.70.30
+Subnet Mask:    255.255.255.0
+Default GW:     10.10.70.1
+DNS Server:     10.10.70.20
+
+Cisco Packet Tracer Service Configuration:
+1. Open SERVER-03 -> Services -> FTP -> Set Service ON.
+2. User Accounts and Permissions (Read, Write, Delete, Rename, List):
+   admin / GlobalTech@FTP2026          [R, W, D, RN, L]
+   branch01_user / Branch01@2026       [R, W, L]
+   branch02_user / Branch02@2026       [R, W, L]
+   branch03_user / Branch03@2026       [R, W, L]
+   branch04_user / Branch04@2026       [R, W, L]
+   branch05_user / Branch05@2026       [R, W, L]
+3. Sample files uploaded:
+   branch01_report.txt
+   enterprise_security_policy.pdf
+   network_topology_2026.png
+
+------------------------------------------------------------------
+SERVER-04: CORPORATE EMAIL SERVER (SMTP / POP3)
+------------------------------------------------------------------
+IP Address:     10.10.70.40
+Subnet Mask:    255.255.255.0
+Default GW:     10.10.70.1
+DNS Server:     10.10.70.20
+
+Cisco Packet Tracer Service Configuration:
+1. Open SERVER-04 -> Services -> EMAIL -> Set SMTP and POP3 ON.
+2. Domain Name: globaltech.local -> Click Set.
+3. User Mailboxes:
+   admin@globaltech.local           / AdminMail@2026
+   user.br01@globaltech.local       / Br01User@2026
+   user.br02@globaltech.local       / Br02User@2026
+   user.br03@globaltech.local       / Br03User@2026
+   user.br04@globaltech.local       / Br04User@2026
+   user.br05@globaltech.local       / Br05User@2026
+
+------------------------------------------------------------------
+SERVER-05: CORPORATE INTRANET WEB SERVER (HTTP)
+------------------------------------------------------------------
+IP Address:     10.10.70.50
+Subnet Mask:    255.255.255.0
+Default GW:     10.10.70.1
+DNS Server:     10.10.70.20
+
+Cisco Packet Tracer Service Configuration:
+1. Open SERVER-05 -> Services -> HTTP -> Set HTTP and HTTPS ON.
+2. Edit index.html with the GlobalTech intranet portal page:
+
+   Title: GlobalTech Industries Ltd. - Enterprise Intranet
+   Content: Welcome message, links to FTP document store,
+   corporate email, and network operations status.
+
+------------------------------------------------------------------
+SERVER-06: NTP and SYSLOG MONITORING SERVER
+------------------------------------------------------------------
+IP Address:     10.10.70.60
+Subnet Mask:    255.255.255.0
+Default GW:     10.10.70.1
+DNS Server:     10.10.70.20
+
+Cisco Packet Tracer Service Configuration:
+1. Open SERVER-06 -> Services -> NTP -> Set Service ON.
+2. Open SERVER-06 -> Services -> SYSLOG -> Set Service ON.
+3. Configure all Cisco routers/switches with:
+   logging 10.10.70.60
+   ntp server 10.10.70.60
+==================================================================

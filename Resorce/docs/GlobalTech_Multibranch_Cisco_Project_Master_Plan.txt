@@ -1,0 +1,1316 @@
+GLOBALTECH INDUSTRIES LTD.
+SECURE MULTI-BRANCH ENTERPRISE NETWORK + WAN SIMULATION
+Cisco Packet Tracer Project – Corrected Professional Master Plan
+================================================================
+
+DOCUMENT PURPOSE
+----------------
+This document is the corrected master plan for a Computer Networks course
+project. It is designed for Cisco Packet Tracer and targets a realistic,
+secure, redundant, scalable and cost-conscious enterprise network.
+
+PROJECT TITLE
+-------------
+"Secure Multi-Branch Enterprise Network with Redundant WAN, Centralized
+Services, Secure File Sharing and Fault-Tolerant Communication"
+
+COMPANY MODEL
+-------------
+Company: GlobalTech Industries Ltd.
+
+Network size:
+- 1 Head Office (HQ)
+- 20 regional branches
+- At least 100 branch computers
+- 5 PCs per branch = 100 branch PCs
+- 15 additional HQ PCs
+- Total planned user PCs = 115
+- Central server room at HQ
+- Central Network Security & Operations Center (NOC/Security Department)
+
+PRIMARY PROJECT OBJECTIVES
+--------------------------
+1. Connect 20 branches through a WAN.
+2. Provide communication between computers in different branches.
+3. Provide centralized internal services from HQ.
+4. Provide DHCP and DNS.
+5. Provide internal web service.
+6. Provide authenticated file transfer/download.
+7. Provide SMTP/POP3 email communication.
+8. Provide controlled Internet access using NAT/PAT.
+9. Provide secure network administration using SSH.
+10. Segment departments using VLANs.
+11. Control traffic using ACLs.
+12. Provide gateway redundancy using HSRP.
+13. Provide dynamic routing using OSPF.
+14. Provide redundant WAN connectivity where practical.
+15. Demonstrate encrypted WAN communication using IPSec on supported
+    representative links.
+16. Make faults easy to locate and repair.
+17. Demonstrate failure recovery during the final presentation.
+18. Keep the design scalable and cost-conscious.
+
+IMPORTANT DESIGN CORRECTIONS FROM THE PREVIOUS PLAN
+----------------------------------------------------
+Correction 1 – HSRP placement:
+HSRP is primarily a first-hop/default-gateway redundancy mechanism for
+hosts on a LAN. It should NOT be described as the main WAN redundancy
+protocol. In this project, HSRP will be implemented on the HQ Layer-3
+core/distribution gateway pair. WAN redundancy will be handled by
+redundant paths and dynamic routing (OSPF), where the Packet Tracer
+topology supports it.
+
+Correction 2 – WAN edge redundancy:
+HQ-R1 and HQ-R2 can both provide WAN/Internet connectivity, but their
+redundancy is logically separate from HSRP. OSPF will determine routing
+and can use an alternate path when a primary path fails.
+
+Correction 3 – "Internal Internet":
+The project will distinguish between:
+A. Corporate internal services:
+   DNS, DHCP, FTP, Mail, HTTP, NTP, monitoring.
+B. External Internet:
+   Access through the ISP/Internet cloud using NAT/PAT.
+This avoids incorrectly calling the internal server room "the Internet."
+
+Correction 4 – IPSec:
+IPSec configuration can be feature/version dependent in Packet Tracer.
+Therefore, the project will include IPSec as the security design and
+demonstrate it on selected representative WAN links if the chosen Packet
+Tracer version supports the required commands. The rest of the WAN can
+still be demonstrated with routing and ACLs. Do not claim full IPSec
+coverage if the simulator does not support it.
+
+Correction 5 – FTP security:
+Traditional FTP transmits credentials and data without modern encryption.
+For this course simulation, authenticated FTP is acceptable to demonstrate
+username/password file access. In the report, explicitly state that
+production environments should use SFTP/FTPS or another encrypted file
+transfer method.
+
+Correction 6 – Server roles:
+The server room will use separate logical server roles:
+DNS/DHCP, FTP/File, Mail, Web, NTP/Syslog/Monitoring. This makes
+troubleshooting and service demonstrations easier.
+
+Correction 7 – Branch design:
+Every branch will use the same standard template. Only the branch number,
+LAN subnet and WAN addressing will change. This makes the project
+scalable and much easier to troubleshoot.
+
+================================================================
+1. HIGH-LEVEL NETWORK ARCHITECTURE
+================================================================
+
+                         INTERNET / ISP
+                              |
+                         ISP ROUTER/CLOUD
+                              |
+                    +---------------------+
+                    |   HQ EDGE ROUTERS   |
+                    |      HQ-R1/R2       |
+                    +----------+----------+
+                               |
+                     +---------+---------+
+                     |                   |
+                  CORE-SW1           CORE-SW2
+                 Layer-3             Layer-3
+                     |                   |
+                     +---------+---------+
+                               |
+                    HSRP Virtual Gateway
+                               |
+        +----------------------+----------------------+
+        |                      |                      |
+    HQ VLANs              SERVER VLAN            SECURITY/NOC
+        |                      |                      |
+  Admin/Finance/HR/IT     DNS/DHCP/FTP/Mail      Monitoring/AAA
+  Management/Guest        Web/NTP/Syslog
+                               |
+                         WAN DISTRIBUTION
+                               |
+       =========================================================
+       |        |        |        |        |        |          |
+      BR01     BR02     BR03     BR04     BR05    ...        BR20
+       |        |        |        |        |                   |
+     Switch   Switch   Switch   Switch   Switch              Switch
+       |        |        |        |        |                   |
+      5 PCs    5 PCs    5 PCs    5 PCs    5 PCs              5 PCs
+
+================================================================
+2. PHYSICAL DEVICE PLAN
+================================================================
+
+HQ:
+- 2 WAN/Edge routers: HQ-R1, HQ-R2
+- 2 Layer-3 core switches: HQ-CORE1, HQ-CORE2
+- 2 or 3 access switches depending on Packet Tracer layout
+- 1 dedicated server switch if desired
+- 5 server roles
+- 15 HQ PCs
+- 2 or more Security/NOC PCs
+
+Each branch:
+- 1 branch router
+- 1 Layer-2 access switch
+- 5 PCs
+
+Total minimum branch equipment:
+- 20 branch routers
+- 20 branch switches
+- 100 branch PCs
+
+HQ + branches:
+- 22 routers total (2 HQ + 20 branches)
+- 22+ switches depending on HQ access/server design
+- 115 user PCs
+- 5 or more servers
+
+NOTE:
+If Packet Tracer becomes slow with the complete topology, build and test
+the full network logically but use representative branch configurations
+during the demonstration. The final topology should still document all
+20 branches.
+
+================================================================
+3. BRANCH STANDARD TEMPLATE
+================================================================
+
+Every branch follows exactly the same logical design:
+
+                    WAN
+                     |
+               BRxx Router
+                     |
+                Branch Switch
+          +----------+----------+
+          |    |     |     |     |
+         PC1  PC2   PC3   PC4   PC5
+
+Example BR01:
+- Router: BR01-R
+- LAN: 10.1.1.0/24
+- Gateway: 10.1.1.1
+- PCs: 10.1.1.10 - 10.1.1.14
+- DHCP supplied automatically
+
+Example BR20:
+- Router: BR20-R
+- LAN: 10.1.20.0/24
+- Gateway: 10.1.20.1
+- PCs: 10.1.20.10 - 10.1.20.14
+
+This standardization is one of the most important troubleshooting
+features of the project.
+
+================================================================
+4. BRANCH LOCATION PLAN
+================================================================
+
+HQ      = Dhaka
+BR01    = Chattogram
+BR02    = Rajshahi
+BR03    = Khulna
+BR04    = Sylhet
+BR05    = Barishal
+BR06    = Rangpur
+BR07    = Mymensingh
+BR08    = Cumilla
+BR09    = Gazipur
+BR10    = Bogura
+BR11    = Jashore
+BR12    = Cox's Bazar
+BR13    = Dinajpur
+BR14    = Feni
+BR15    = Tangail
+BR16    = Narayanganj
+BR17    = Pabna
+BR18    = Kushtia
+BR19    = Noakhali
+BR20    = Faridpur
+
+================================================================
+5. IP ADDRESSING PLAN
+================================================================
+
+A. HQ VLANs
+
+VLAN 10  ADMINISTRATION   10.10.10.0/24
+VLAN 20  FINANCE          10.10.20.0/24
+VLAN 30  HR               10.10.30.0/24
+VLAN 40  IT               10.10.40.0/24
+VLAN 50  SECURITY/NOC     10.10.50.0/24
+VLAN 60  MANAGEMENT       10.10.60.0/24
+VLAN 70  SERVERS          10.10.70.0/24
+VLAN 80  GUEST            10.10.80.0/24
+
+HSRP virtual gateways:
+VLAN 10 = 10.10.10.1
+VLAN 20 = 10.10.20.1
+VLAN 30 = 10.10.30.1
+VLAN 40 = 10.10.40.1
+VLAN 50 = 10.10.50.1
+VLAN 60 = 10.10.60.1
+VLAN 70 = 10.10.70.1
+VLAN 80 = 10.10.80.1
+
+Example physical gateway addresses:
+CORE1 = x.x.x.2
+CORE2 = x.x.x.3
+HSRP VIP = x.x.x.1
+
+CORE1 and CORE2 must use unique addresses in every VLAN.
+
+B. Branch LANs
+
+BR01 = 10.1.1.0/24
+BR02 = 10.1.2.0/24
+BR03 = 10.1.3.0/24
+BR04 = 10.1.4.0/24
+BR05 = 10.1.5.0/24
+BR06 = 10.1.6.0/24
+BR07 = 10.1.7.0/24
+BR08 = 10.1.8.0/24
+BR09 = 10.1.9.0/24
+BR10 = 10.1.10.0/24
+BR11 = 10.1.11.0/24
+BR12 = 10.1.12.0/24
+BR13 = 10.1.13.0/24
+BR14 = 10.1.14.0/24
+BR15 = 10.1.15.0/24
+BR16 = 10.1.16.0/24
+BR17 = 10.1.17.0/24
+BR18 = 10.1.18.0/24
+BR19 = 10.1.19.0/24
+BR20 = 10.1.20.0/24
+
+Each branch gateway:
+10.1.X.1
+
+Example:
+BR12 gateway = 10.1.12.1
+
+C. WAN ADDRESS SPACE
+
+Use:
+172.16.0.0/16
+
+For point-to-point WAN links use /30 subnets.
+
+Example:
+BR01 primary link:
+172.16.1.0/30
+HQ side = 172.16.1.1
+BR01 side = 172.16.1.2
+
+BR02 primary:
+172.16.2.0/30
+HQ side = 172.16.2.1
+BR02 side = 172.16.2.2
+
+Continue systematically.
+
+For backup WAN links, use a separate /30 sequence, for example:
+172.16.101.0/30 onward.
+
+DO NOT reuse a /30 on two different links.
+
+================================================================
+6. ROUTING DESIGN
+================================================================
+
+Primary routing protocol:
+OSPF
+
+Suggested:
+OSPF Process ID = 10
+Area = 0 for the main WAN topology.
+
+Reasons:
+- Dynamic route learning
+- Automatic route recalculation
+- Better scalability than 20-branch static routing
+- Easier failure recovery
+- Easy troubleshooting with show ip route and show ip ospf neighbor
+
+Core/edge and branch routers advertise only the networks they need.
+
+Useful commands for troubleshooting:
+show ip route
+show ip ospf neighbor
+show ip ospf interface
+show ip protocols
+
+IMPORTANT:
+Do not rely on static routes for the entire 20-branch network. Static
+routes may be used only for special management/default/backup cases.
+
+================================================================
+7. HSRP DESIGN
+================================================================
+
+HSRP will be used at HQ between CORE1 and CORE2 for the HQ VLAN
+default gateways.
+
+Example VLAN 10:
+
+CORE1:
+10.10.10.2/24
+
+CORE2:
+10.10.10.3/24
+
+HSRP virtual IP:
+10.10.10.1
+
+Example:
+CORE1 priority 110
+CORE2 priority 100
+CORE1 preempt enabled
+
+If CORE1 fails:
+CORE2 becomes active.
+
+Repeat the HSRP design for the important HQ VLANs.
+
+HSRP provides:
+- First-hop redundancy
+- Default gateway availability
+
+HSRP does NOT replace OSPF.
+OSPF provides routing.
+HSRP provides gateway redundancy.
+
+================================================================
+8. WAN REDUNDANCY
+================================================================
+
+The project should have a primary and backup WAN path for important
+branches or for the representative branches used in the demonstration.
+
+Example:
+
+BR01
+ | \
+ |  \
+Primary Backup
+ |      |
+HQ-R1  HQ-R2
+
+OSPF should prefer the primary path through routing cost/metric.
+If the primary path disappears, routing should converge toward the
+available path.
+
+IMPORTANT:
+Do not describe HSRP as the mechanism that detects or repairs a WAN
+route failure. That is a routing/WAN function.
+
+For a cost-friendly project, not every branch needs two physically
+independent links if the Packet Tracer topology becomes unnecessarily
+large. Demonstrate redundancy on critical/representative branches and
+document the scalable design for all branches.
+
+================================================================
+9. VLAN DESIGN
+================================================================
+
+HQ VLANs:
+10 Administration
+20 Finance
+30 HR
+40 IT
+50 Security/NOC
+60 Management
+70 Servers
+80 Guest
+
+Use 802.1Q trunking between switches where required.
+
+Use inter-VLAN routing on the Layer-3 core switches.
+
+Security objective:
+Departments should not automatically have unrestricted access to every
+other department.
+
+Example:
+Guest -> Internet: ALLOW
+Guest -> Finance: DENY
+Guest -> HR: DENY
+Guest -> Management: DENY
+Guest -> Server management interfaces: DENY
+
+================================================================
+10. DHCP DESIGN
+================================================================
+
+Central DHCP server:
+10.10.70.10
+
+The server provides:
+- IP address
+- Subnet mask
+- Default gateway
+- DNS server
+
+For remote branches, use DHCP relay:
+ip helper-address 10.10.70.10
+
+The branch router/L3 gateway forwards DHCP requests to the central
+DHCP server.
+
+This avoids configuring 115 PCs manually.
+
+DHCP pools:
+BR01: 10.1.1.0/24
+BR02: 10.1.2.0/24
+...
+BR20: 10.1.20.0/24
+
+Reserve:
+.1 = gateway
+.2-.9 = infrastructure/reserved
+.10 onward = user devices
+
+================================================================
+11. DNS DESIGN
+================================================================
+
+DNS Server:
+10.10.70.20
+
+Internal domain:
+globaltech.local
+
+Suggested records:
+
+dns.globaltech.local       -> 10.10.70.20
+files.globaltech.local     -> 10.10.70.30
+mail.globaltech.local      -> 10.10.70.40
+www.globaltech.local       -> 10.10.70.50
+ntp.globaltech.local       -> 10.10.70.60
+
+The exact server IPs can be adjusted if the selected Packet Tracer
+server layout requires it, but keep one documented final table.
+
+DNS troubleshooting:
+1. Ping server IP.
+2. Test name resolution.
+3. Verify DNS address received by DHCP.
+4. Verify DNS service is enabled.
+5. Check the DNS record.
+
+================================================================
+12. SERVER ROOM
+================================================================
+
+Recommended server roles:
+
+SERVER-01
+Role: DHCP
+IP: 10.10.70.10
+
+SERVER-02
+Role: DNS
+IP: 10.10.70.20
+
+SERVER-03
+Role: FTP/File
+IP: 10.10.70.30
+
+SERVER-04
+Role: Mail
+IP: 10.10.70.40
+
+SERVER-05
+Role: Web
+IP: 10.10.70.50
+
+SERVER-06
+Role: NTP/Syslog/Monitoring
+IP: 10.10.70.60
+
+If Packet Tracer resource limits make six physical servers inconvenient,
+some roles can be combined, but separate logical services should remain
+documented.
+
+================================================================
+13. FILE SHARING / DOWNLOAD
+================================================================
+
+Use an FTP server for the course simulation.
+
+FTP Server:
+10.10.70.30
+DNS:
+files.globaltech.local
+
+Example accounts:
+branch01_user / Branch01@2026
+branch05_user / Branch05@2026
+branch15_user / Branch15@2026
+
+Required demonstration:
+A PC from BR15 logs into the FTP server using authorized credentials
+and downloads a file.
+
+Example:
+BR15-PC2
+  ->
+files.globaltech.local
+  ->
+username/password
+  ->
+download branch01_report.txt
+
+IMPORTANT SECURITY NOTE:
+Traditional FTP is not encrypted. In the report state:
+"FTP is used here because it is supported and demonstrable in the
+educational simulator. A production enterprise should use SFTP/FTPS
+or another encrypted file-transfer solution."
+
+================================================================
+14. EMAIL SERVICE
+================================================================
+
+Mail Server:
+10.10.70.40
+
+Domain:
+globaltech.local
+
+Example accounts:
+partho@globaltech.local
+branch01@globaltech.local
+branch15@globaltech.local
+
+Use:
+SMTP for sending
+POP3 for receiving, if supported/configured in the chosen Packet
+Tracer version.
+
+Demonstration:
+BR01 user sends email to BR15 user.
+
+This proves:
+- DNS/name resolution
+- Inter-branch routing
+- TCP/application communication
+- Mail service
+
+================================================================
+15. INTERNAL WEB SERVICE
+================================================================
+
+Web Server:
+10.10.70.50
+
+DNS:
+www.globaltech.local
+
+Create a simple internal corporate website.
+
+Suggested page:
+
+GLOBALTECH INDUSTRIES LTD.
+--------------------------------
+Internal Corporate Portal
+
+Departments:
+Administration
+Finance
+HR
+IT
+Security/NOC
+
+Branches:
+BR01 - BR20
+
+Services:
+DNS
+DHCP
+File Server
+Mail
+Network Support
+
+The website gives the project a visible application-layer component.
+
+================================================================
+16. INTERNET ACCESS
+================================================================
+
+External Internet:
+PC
+ -> Branch Router
+ -> WAN
+ -> HQ Edge
+ -> ISP
+ -> Internet
+
+Use NAT/PAT at the Internet edge.
+
+Private addresses:
+10.0.0.0/8
+and
+172.16.0.0/16
+
+are translated to the public-facing interface/address.
+
+NAT/PAT allows many internal devices to share a smaller number of
+public IP addresses.
+
+Security:
+Inbound unsolicited Internet traffic to internal private networks
+should be denied unless explicitly required.
+
+================================================================
+17. SECURITY DEPARTMENT / NOC
+================================================================
+
+Create:
+"Network Security & Operations Center"
+
+VLAN:
+50
+Network:
+10.10.50.0/24
+
+Responsibilities:
+- Monitor routers
+- Monitor switches
+- Review logs
+- Manage network devices
+- Check connectivity
+- Investigate failures
+- Control administrative access
+- Maintain security policies
+
+Suggested services:
+NTP
+Syslog
+SNMP/monitoring where supported
+AAA/TACACS+/RADIUS conceptually, if supported by the selected
+Packet Tracer version
+
+Administrative access:
+SSH only
+Avoid Telnet in the final design.
+
+================================================================
+18. ACCESS-LAYER SECURITY
+================================================================
+
+Use where supported:
+
+1. Port Security
+2. Restrict learned MAC addresses
+3. Shut down unused ports
+4. Put unused ports in an unused VLAN
+5. PortFast on appropriate end-host ports
+6. BPDU Guard on appropriate access ports
+
+These should be demonstrated on at least one representative switch
+and documented as a repeatable standard for all branches.
+
+================================================================
+19. ACL SECURITY POLICY
+================================================================
+
+Create extended ACLs according to business requirements.
+
+Examples:
+
+Guest VLAN:
+- Allow DNS
+- Allow HTTP/HTTPS as appropriate
+- Allow Internet access
+- Deny internal department networks
+
+Finance:
+- Allow required server access
+- Deny unnecessary access from other user VLANs
+
+Management:
+- Only IT/Security/NOC can manage network devices
+
+Branch users:
+- Allow DNS
+- Allow DHCP
+- Allow approved file/mail/web services
+- Deny management VLAN
+- Deny unauthorized administrative access
+
+IMPORTANT:
+Do not create a huge ACL without a documented policy. Every deny/permit
+should have a reason.
+
+================================================================
+20. SSH MANAGEMENT
+================================================================
+
+All routers/switches should be managed using SSH where Packet Tracer
+supports it.
+
+Example concept:
+
+hostname BR01-R
+ip domain-name globaltech.local
+username admin privilege 15 secret <strong-password>
+crypto key generate rsa
+line vty 0 4
+login local
+transport input ssh
+
+Do not use a plain-text shared Telnet password as the primary management
+method.
+
+Use different administrative credentials in a real deployment.
+
+================================================================
+21. IPSec / WAN ENCRYPTION
+================================================================
+
+Security goal:
+Protect sensitive traffic across untrusted WAN infrastructure.
+
+Preferred design:
+Site-to-site IPSec VPN between HQ and selected branches, or a
+representative branch-to-HQ pair for the Packet Tracer demonstration.
+
+Demonstration:
+BR01 -> encrypted tunnel -> HQ
+
+Then verify that normal application communication still works.
+
+IMPORTANT:
+Packet Tracer feature support varies by version and device model.
+Before building all 20 IPSec tunnels, test one tunnel. If the chosen
+Packet Tracer image/version does not support the exact IPSec design,
+document the intended production design and demonstrate the other
+security controls that the simulator supports. Do not build the entire
+project around a feature that your simulator cannot execute.
+
+================================================================
+22. STP / SWITCH REDUNDANCY
+================================================================
+
+At HQ, redundant Layer-2 paths must not create switching loops.
+
+Use STP/RSTP as appropriate.
+
+The Layer-3 core should provide the gateway functions.
+
+Avoid creating unnecessary Layer-2 loops at branch level.
+
+If two core switches are connected with redundant Layer-2 links,
+configure the appropriate STP design.
+
+================================================================
+23. NTP AND LOGGING
+================================================================
+
+Central NTP:
+10.10.70.60
+
+All network devices should use a common time source where supported.
+
+Central Syslog:
+10.10.70.60
+
+Purpose:
+- Troubleshooting
+- Security investigation
+- Event correlation
+- Consistent timestamps
+
+Example events:
+Interface down
+Interface up
+OSPF neighbor change
+Authentication failure
+ACL-related events where supported
+
+================================================================
+24. TROUBLESHOOTING MODEL
+================================================================
+
+Use a strict layered troubleshooting method.
+
+LAYER 1 – Physical:
+- Is the cable connected?
+- Is the interface up?
+- Are ports administratively shut?
+
+Commands:
+show ip interface brief
+show interfaces
+
+LAYER 2 – Switching:
+- Is the correct VLAN assigned?
+- Is trunking working?
+- Is STP blocking unexpectedly?
+
+Commands:
+show vlan brief
+show interfaces trunk
+show spanning-tree
+
+LAYER 3 – IP:
+- Does the PC have the correct IP?
+- Is the subnet mask correct?
+- Is the default gateway correct?
+
+PC:
+ipconfig
+
+LAYER 3 – Routing:
+- Is OSPF established?
+- Is the destination route present?
+
+Commands:
+show ip route
+show ip ospf neighbor
+
+LAYER 3 – Gateway redundancy:
+- Which HSRP router is active?
+
+Command:
+show standby
+
+LAYER 4:
+- Is TCP connectivity possible?
+
+Use ping/traceroute and application tests.
+
+APPLICATION:
+- DNS working?
+- FTP working?
+- Mail working?
+- Web working?
+
+This layered method makes the source of a failure easy to isolate.
+
+================================================================
+25. FAILURE TEST PLAN
+================================================================
+
+TEST 1 – HQ Core Failure
+------------------------
+Power off/fail CORE1.
+
+Expected:
+CORE2 becomes HSRP active.
+HQ hosts retain the virtual default gateway.
+Connectivity should continue.
+
+TEST 2 – Primary WAN Failure
+----------------------------
+Disconnect a primary WAN link.
+
+Expected:
+OSPF reconverges toward the backup path where configured.
+
+Verify:
+show ip route
+show ip ospf neighbor
+ping
+traceroute
+
+TEST 3 – DHCP Failure
+---------------------
+Disable DHCP service.
+
+Expected:
+New clients fail to obtain an address.
+
+Restore service and verify lease acquisition.
+
+TEST 4 – DNS Failure
+--------------------
+Disable DNS.
+
+Expected:
+Direct IP communication may work while hostname-based access fails.
+
+Restore DNS and verify:
+ping files.globaltech.local
+
+TEST 5 – ACL Test
+-----------------
+Guest PC attempts to reach Finance.
+
+Expected:
+Denied.
+
+Guest PC attempts permitted Internet/service access.
+
+Expected:
+Allowed.
+
+TEST 6 – FTP Authentication
+---------------------------
+Wrong username/password:
+Access denied.
+
+Correct username/password:
+File access permitted.
+
+TEST 7 – SSH Security
+---------------------
+Attempt Telnet:
+Should not be the approved management method.
+
+Attempt SSH with correct credentials:
+Access permitted.
+
+================================================================
+26. APPLICATION TEST MATRIX
+================================================================
+
+Test A:
+BR01-PC1 -> BR20-PC1
+PING
+Expected: Success
+
+Test B:
+BR15-PC2 -> files.globaltech.local
+DNS
+Expected: Name resolves
+
+Test C:
+BR15-PC2 -> FTP
+Expected: Login + file download
+
+Test D:
+BR01 user -> BR15 user
+SMTP/POP3
+Expected: Email transfer
+
+Test E:
+BR05-PC1 -> www.globaltech.local
+HTTP
+Expected: Internal website opens
+
+Test F:
+Guest -> Finance
+ACL
+Expected: Denied
+
+Test G:
+Security PC -> Router
+SSH
+Expected: Successful secure management
+
+Test H:
+Primary WAN failure
+OSPF
+Expected: Alternate route if configured
+
+Test I:
+CORE1 failure
+HSRP
+Expected: CORE2 takes over
+
+================================================================
+27. COST OPTIMIZATION
+================================================================
+
+The design is cost-conscious because:
+
+1. Centralize expensive server resources at HQ.
+2. Use standardized low-complexity branch topology.
+3. Use VLANs instead of separate physical networks.
+4. Use dynamic routing instead of extensive manual routing.
+5. Use NAT/PAT to reduce public IP requirements.
+6. Use shared centralized DNS/DHCP/file/mail/web services.
+7. Use redundant infrastructure only where it provides meaningful
+   availability benefits.
+8. Avoid unnecessary full-mesh WAN links.
+9. Standardize branch equipment and configurations.
+
+Do NOT claim that redundancy is free. Redundancy adds equipment and
+links. The design balances reliability with project cost.
+
+================================================================
+28. SCALABILITY
+================================================================
+
+The branch addressing pattern supports easy expansion.
+
+Current:
+20 branches
+100 branch PCs
+115 total user PCs
+
+Future:
+BR21 -> 10.1.21.0/24
+BR22 -> 10.1.22.0/24
+...
+BR50 -> 10.1.50.0/24
+
+The standardized branch template means a new branch requires:
+- Router
+- Switch
+- LAN subnet
+- WAN subnet/link
+- OSPF configuration
+- DHCP pool/relay
+- ACL policy
+- DNS/service policy
+
+================================================================
+29. PROJECT BUILD ORDER
+================================================================
+
+PHASE 1 – Base topology
+Create HQ and BR01.
+Test basic connectivity.
+
+PHASE 2 – IP addressing
+Configure all interfaces and branch LANs.
+
+PHASE 3 – VLANs
+Create HQ VLANs and trunks.
+
+PHASE 4 – Inter-VLAN routing
+Configure Layer-3 core routing.
+
+PHASE 5 – OSPF
+Configure dynamic routing.
+
+PHASE 6 – DHCP
+Configure central DHCP and relay.
+
+PHASE 7 – DNS
+Configure internal name resolution.
+
+PHASE 8 – Server room
+Configure FTP, Mail, Web, NTP/Syslog.
+
+PHASE 9 – Add BR02-BR20
+Replicate standardized branch design.
+
+PHASE 10 – HSRP
+Configure redundant HQ gateways.
+
+PHASE 11 – WAN redundancy
+Add backup paths and verify OSPF failover.
+
+PHASE 12 – Security
+ACLs, SSH, port security, unused ports.
+
+PHASE 13 – NAT/PAT
+Configure Internet access.
+
+PHASE 14 – IPSec
+Test one tunnel first, then expand only if supported and stable.
+
+PHASE 15 – Testing
+Run every test in the test matrix.
+
+PHASE 16 – Failure demonstration
+Intentionally create failures and repair them.
+
+PHASE 17 – Documentation
+Finalize topology, IP table, protocol table, security policy and
+troubleshooting guide.
+
+================================================================
+30. FINAL DEMONSTRATION SCRIPT
+================================================================
+
+Start with:
+"This is GlobalTech Industries Ltd., a 20-branch enterprise network."
+
+Show:
+1. 20 branches.
+2. 115 PCs.
+3. HQ server room.
+4. Security/NOC department.
+5. VLAN separation.
+6. DHCP-assigned IP.
+7. DNS hostname resolution.
+8. Inter-branch ping.
+9. Internal website.
+10. FTP login and file download.
+11. Email between two branches.
+12. Internet access through NAT/PAT.
+13. SSH administration.
+14. ACL blocking unauthorized access.
+15. HSRP failover.
+16. WAN/OSPF failover.
+17. IPSec demonstration if supported.
+18. Troubleshooting after a deliberate failure.
+
+================================================================
+31. VIVA EXPLANATION – KEY CONCEPTS
+================================================================
+
+Q: Why OSPF?
+A: Because there are 20 branches and dynamic routing provides scalable
+   route learning and reconvergence after topology changes.
+
+Q: Why HSRP?
+A: To provide a redundant default gateway for HQ VLANs.
+
+Q: Does HSRP provide WAN routing?
+A: No. OSPF handles routing; HSRP handles first-hop gateway redundancy.
+
+Q: Why VLANs?
+A: To logically separate departments, reduce broadcast domains and
+   enforce security policies.
+
+Q: Why DHCP?
+A: To automatically assign IP configuration and reduce manual errors.
+
+Q: Why DNS?
+A: To translate human-readable names into IP addresses.
+
+Q: Why FTP?
+A: To demonstrate authenticated file transfer in Packet Tracer.
+   Production would use an encrypted file-transfer protocol.
+
+Q: Why NAT/PAT?
+A: To allow many private hosts to share public Internet connectivity.
+
+Q: Why ACL?
+A: To control which traffic is permitted or denied between network
+   segments.
+
+Q: Why SSH?
+A: To provide secure remote device administration instead of Telnet.
+
+Q: Why IPSec?
+A: To protect sensitive WAN traffic across untrusted infrastructure.
+
+Q: Why NTP?
+A: Consistent timestamps are important for logs and troubleshooting.
+
+Q: Why a NOC/Security department?
+A: To centralize monitoring, administration, incident investigation and
+   network security operations.
+
+================================================================
+32. FINAL PROTOCOL LIST
+================================================================
+
+Ethernet
+ARP
+IPv4
+ICMP
+TCP
+UDP
+DHCP
+DNS
+OSPF
+HSRP
+VLAN
+802.1Q
+STP/RSTP
+NAT/PAT
+SSH
+FTP
+SMTP
+POP3
+HTTP
+NTP
+Syslog
+SNMP (where supported)
+IPSec (where supported)
+
+================================================================
+33. FINAL NETWORK REQUIREMENTS CHECKLIST
+================================================================
+
+[YES] 20 branches
+[YES] At least 100 computers
+[YES] 115 planned user PCs
+[YES] Central HQ
+[YES] Central server room
+[YES] Inter-branch communication
+[YES] Authenticated file download
+[YES] DNS
+[YES] DHCP
+[YES] TCP/IP
+[YES] SMTP/POP3
+[YES] HTTP
+[YES] FTP
+[YES] OSPF
+[YES] HSRP
+[YES] VLAN
+[YES] ACL
+[YES] SSH
+[YES] NAT/PAT
+[YES] WAN redundancy
+[YES] Security/NOC department
+[YES] Troubleshooting methodology
+[YES] Failure testing
+[YES] Cost optimization
+[YES] Scalability
+[YES] Encryption design with IPSec where simulator supports it
+
+================================================================
+34. FINAL ARCHITECTURAL PRINCIPLE
+================================================================
+
+The network follows this separation:
+
+LAN:
+VLAN + Ethernet + STP
+
+Inter-VLAN:
+Layer-3 core switching
+
+WAN routing:
+OSPF
+
+Gateway redundancy:
+HSRP
+
+Internet:
+NAT/PAT
+
+Internal services:
+DHCP + DNS + FTP + Mail + HTTP + NTP/Syslog
+
+Security:
+ACL + VLAN segmentation + SSH + Port Security + IPSec where supported
+
+Troubleshooting:
+Layered diagnosis + show commands + ping + traceroute + application tests
+
+================================================================
+35. FINAL RECOMMENDATION
+================================================================
+
+Build the project in stages. Do not configure all 20 branches at the
+same time.
+
+First make HQ + BR01 completely functional.
+
+Then make BR02-BR05 functional.
+
+Then replicate the branch template through BR20.
+
+After basic routing works, add services.
+
+After services work, add security.
+
+After security works, add redundancy.
+
+Finally perform deliberate failure tests.
+
+The project should be judged not by the number of devices alone, but by
+whether every technology has a clear purpose and can be demonstrated.
+
+The final design is therefore:
+- Professional
+- Scalable
+- Cost-conscious
+- Redundant
+- Secure
+- Service-oriented
+- Easy to troubleshoot
+- Appropriate for a Computer Networks course
+- Practical to implement in Cisco Packet Tracer
+
+END OF MASTER PLAN

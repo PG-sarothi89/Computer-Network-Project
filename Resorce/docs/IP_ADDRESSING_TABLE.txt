@@ -1,0 +1,123 @@
+==================================================================
+GLOBALTECH INDUSTRIES LTD. - COMPLETE IP ADDRESSING TABLE
+Enterprise Network: 115+ Wired PCs + Wireless Clients
+==================================================================
+
+A. HQ VLAN SUBNETS
+==================================================================
+VLAN  Name              Subnet            HSRP VIP       CORE1       CORE2
+----  ----------------  ----------------  -------------  ----------  ----------
+10    ADMINISTRATION    10.10.10.0/24     10.10.10.1     10.10.10.2  10.10.10.3
+20    FINANCE           10.10.20.0/24     10.10.20.1     10.10.20.2  10.10.20.3
+30    HUMAN RESOURCES   10.10.30.0/24     10.10.30.1     10.10.30.2  10.10.30.3
+40    INFORMATION TECH  10.10.40.0/24     10.10.40.1     10.10.40.2  10.10.40.3
+50    SECURITY / NOC    10.10.50.0/24     10.10.50.1     10.10.50.2  10.10.50.3
+60    MANAGEMENT        10.10.60.0/24     10.10.60.1     10.10.60.2  10.10.60.3
+70    SERVERS           10.10.70.0/24     10.10.70.1     10.10.70.2  10.10.70.3
+80    GUEST             10.10.80.0/24     10.10.80.1     10.10.80.2  10.10.80.3
+90    WIRELESS (HQ)     10.10.90.0/24     10.10.90.1     10.10.90.2  10.10.90.3
+
+B. HQ SERVER FARM (VLAN 70)
+==================================================================
+Server       Role                IP Address      DNS Name
+-----------  ------------------  --------------  -------------------------
+SERVER-01    DHCP                10.10.70.10     dhcp.globaltech.local
+SERVER-02    DNS                 10.10.70.20     dns.globaltech.local
+SERVER-03    FTP / File Server   10.10.70.30     files.globaltech.local
+SERVER-04    Email (SMTP/POP3)   10.10.70.40     mail.globaltech.local
+SERVER-05    Web (HTTP/HTTPS)    10.10.70.50     www.globaltech.local
+SERVER-06    NTP / Syslog        10.10.70.60     ntp.globaltech.local
+
+C. HQ INFRASTRUCTURE LINKS
+==================================================================
+Link                          Subnet              Side A          Side B
+----------------------------  ------------------  --------------  --------------
+CORE1 <-> CORE2               10.10.99.0/30       10.10.99.1(C1)  10.10.99.2(C2)
+CORE1 <-> EDGE-R1             10.10.100.0/30      10.10.100.1     10.10.100.2
+CORE1 <-> EDGE-R2             10.10.100.4/30      10.10.100.5     10.10.100.6
+CORE2 <-> EDGE-R1             10.10.100.8/30      10.10.100.9     10.10.100.10
+CORE2 <-> EDGE-R2             10.10.100.12/30     10.10.100.13    10.10.100.14
+EDGE-R1 <-> ISP               203.0.113.0/30      203.0.113.2     203.0.113.1(ISP)
+
+D. BRANCH LAN SUBNETS (20 Branches)
+==================================================================
+Branch  City            LAN Subnet        Gateway      Switch Mgmt   DHCP Start
+------  --------------  ----------------  -----------  ------------  ----------
+BR01    CHATTOGRAM      10.1.1.0/24         10.1.1.1      10.1.1.250    10.1.1.10
+BR02    RAJSHAHI        10.1.2.0/24         10.1.2.1      10.1.2.250    10.1.2.10
+BR03    KHULNA          10.1.3.0/24         10.1.3.1      10.1.3.250    10.1.3.10
+BR04    SYLHET          10.1.4.0/24         10.1.4.1      10.1.4.250    10.1.4.10
+BR05    BARISHAL        10.1.5.0/24         10.1.5.1      10.1.5.250    10.1.5.10
+BR06    RANGPUR         10.1.6.0/24         10.1.6.1      10.1.6.250    10.1.6.10
+BR07    MYMENSINGH      10.1.7.0/24         10.1.7.1      10.1.7.250    10.1.7.10
+BR08    COMILLA         10.1.8.0/24         10.1.8.1      10.1.8.250    10.1.8.10
+BR09    GAZIPUR         10.1.9.0/24         10.1.9.1      10.1.9.250    10.1.9.10
+BR10    NARAYANGANJ     10.1.10.0/24        10.1.10.1     10.1.10.250   10.1.10.10
+BR11    BOGRA           10.1.11.0/24        10.1.11.1     10.1.11.250   10.1.11.10
+BR12    COXS-BAZAR      10.1.12.0/24        10.1.12.1     10.1.12.250   10.1.12.10
+BR13    JESSORE         10.1.13.0/24        10.1.13.1     10.1.13.250   10.1.13.10
+BR14    DINAJPUR        10.1.14.0/24        10.1.14.1     10.1.14.250   10.1.14.10
+BR15    TANGAIL         10.1.15.0/24        10.1.15.1     10.1.15.250   10.1.15.10
+BR16    BRAHMANBARIA    10.1.16.0/24        10.1.16.1     10.1.16.250   10.1.16.10
+BR17    NARSINGDI       10.1.17.0/24        10.1.17.1     10.1.17.250   10.1.17.10
+BR18    SAVAR           10.1.18.0/24        10.1.18.1     10.1.18.250   10.1.18.10
+BR19    TONGI           10.1.19.0/24        10.1.19.1     10.1.19.250   10.1.19.10
+BR20    FARIDPUR        10.1.20.0/24        10.1.20.1     10.1.20.250   10.1.20.10
+
+E. PRIMARY WAN LINKS (Point-to-Point /30)
+==================================================================
+Branch  City            WAN Subnet            HQ Side         Branch Side     Edge Router
+------  --------------  --------------------  --------------  --------------  -----------
+BR01    CHATTOGRAM      172.16.1.0/30           172.16.1.1        172.16.1.2        HQ-EDGE-R1
+BR02    RAJSHAHI        172.16.2.0/30           172.16.2.1        172.16.2.2        HQ-EDGE-R1
+BR03    KHULNA          172.16.3.0/30           172.16.3.1        172.16.3.2        HQ-EDGE-R1
+BR04    SYLHET          172.16.4.0/30           172.16.4.1        172.16.4.2        HQ-EDGE-R1
+BR05    BARISHAL        172.16.5.0/30           172.16.5.1        172.16.5.2        HQ-EDGE-R1
+BR06    RANGPUR         172.16.6.0/30           172.16.6.1        172.16.6.2        HQ-EDGE-R1
+BR07    MYMENSINGH      172.16.7.0/30           172.16.7.1        172.16.7.2        HQ-EDGE-R1
+BR08    COMILLA         172.16.8.0/30           172.16.8.1        172.16.8.2        HQ-EDGE-R1
+BR09    GAZIPUR         172.16.9.0/30           172.16.9.1        172.16.9.2        HQ-EDGE-R1
+BR10    NARAYANGANJ     172.16.10.0/30          172.16.10.1       172.16.10.2       HQ-EDGE-R1
+BR11    BOGRA           172.16.11.0/30          172.16.11.1       172.16.11.2       HQ-EDGE-R2
+BR12    COXS-BAZAR      172.16.12.0/30          172.16.12.1       172.16.12.2       HQ-EDGE-R2
+BR13    JESSORE         172.16.13.0/30          172.16.13.1       172.16.13.2       HQ-EDGE-R2
+BR14    DINAJPUR        172.16.14.0/30          172.16.14.1       172.16.14.2       HQ-EDGE-R2
+BR15    TANGAIL         172.16.15.0/30          172.16.15.1       172.16.15.2       HQ-EDGE-R2
+BR16    BRAHMANBARIA    172.16.16.0/30          172.16.16.1       172.16.16.2       HQ-EDGE-R2
+BR17    NARSINGDI       172.16.17.0/30          172.16.17.1       172.16.17.2       HQ-EDGE-R2
+BR18    SAVAR           172.16.18.0/30          172.16.18.1       172.16.18.2       HQ-EDGE-R2
+BR19    TONGI           172.16.19.0/30          172.16.19.1       172.16.19.2       HQ-EDGE-R2
+BR20    FARIDPUR        172.16.20.0/30          172.16.20.1       172.16.20.2       HQ-EDGE-R2
+
+F. BACKUP WAN LINKS (BR01-BR05 Only, /30)
+==================================================================
+Branch  City            WAN Subnet            HQ Side          Branch Side
+------  --------------  --------------------  ---------------  ---------------
+BR01    CHATTOGRAM      172.16.101.0/30       172.16.101.1     172.16.101.2
+BR02    RAJSHAHI        172.16.102.0/30       172.16.102.1     172.16.102.2
+BR03    KHULNA          172.16.103.0/30       172.16.103.1     172.16.103.2
+BR04    SYLHET          172.16.104.0/30       172.16.104.1     172.16.104.2
+BR05    BARISHAL        172.16.105.0/30       172.16.105.1     172.16.105.2
+
+Note: Backup WAN links have OSPF cost 100 vs primary cost 10.
+      OSPF auto-reroutes if primary link fails.
+
+G. DEVICE COUNT SUMMARY
+==================================================================
+Device Type          Count    Details
+-------------------  -------  ----------------------------------------
+Layer-3 Core Switch  2        HQ-CORE1, HQ-CORE2 (HSRP pair)
+HQ Edge Router       2        HQ-EDGE-R1 (primary), HQ-EDGE-R2 (backup)
+Branch Router        20       BR01-R through BR20-R
+HQ Access Switch     2        HQ-ACCESS-SW1, HQ-ACCESS-SW2
+Branch Access Switch 20       BR01-SW through BR20-SW
+HQ Servers           6        DHCP, DNS, FTP, Mail, Web, NTP/Syslog
+Wired PCs (HQ)       15       Across 7 department VLANs
+Wired PCs (Branch)   100      5 per branch x 20 branches
+Wireless APs (HQ)    2        HQ-AP-1, HQ-AP-2
+Wireless APs (Branch)20       BR01-AP through BR20-AP
+ISP Cloud            1        Simulated Internet
+-------------------  -------  ----------------------------------------
+TOTAL DEVICES        190+     (plus wireless laptop clients)
+TOTAL WIRED PCs      115
+==================================================================

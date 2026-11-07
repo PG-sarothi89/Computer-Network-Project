@@ -1,0 +1,452 @@
+==================================================================
+GLOBALTECH INDUSTRIES LTD. - WIRELESS ACCESS POINT SETUP GUIDE
+Complete Wireless Deployment for HQ + 20 Regional Branches
+==================================================================
+
+OVERVIEW
+--------
+Each location receives at least one Cisco Wireless Access Point (AP).
+HQ receives 2 APs (one per access switch). Branches receive 1 AP each.
+Total APs: 22 (2 HQ + 20 Branches)
+
+All APs use WPA2-PSK for authentication (Packet Tracer compatible).
+Wireless clients receive IP addresses via central DHCP (with relay).
+
+==================================================================
+HQ WIRELESS ACCESS POINTS
+==================================================================
+
+AP Name:        HQ-AP-1
+Connected to:   HQ-ACCESS-SW1 FastEthernet0/15 (VLAN 90)
+SSID:           GlobalTech-HQ
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFi2026HQ
+Channel:        1 (2.4 GHz)
+Subnet:         10.10.90.0/24 (via HSRP gateway 10.10.90.1)
+
+AP Name:        HQ-AP-2
+Connected to:   HQ-ACCESS-SW2 FastEthernet0/8 (VLAN 90)
+SSID:           GlobalTech-HQ
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFi2026HQ
+Channel:        6 (2.4 GHz) -- different channel to avoid interference
+Subnet:         10.10.90.0/24 (same VLAN 90)
+
+Packet Tracer Configuration Steps (HQ APs):
+1. Place AccessPoint-PT device on the topology.
+2. Connect AP Ethernet port to the designated switch port.
+3. Click AP -> Config tab:
+   a. Port 0 (Ethernet): SSID = GlobalTech-HQ
+   b. Authentication: WPA2-PSK
+   c. PSK Pass Phrase: GlobalTech@WiFi2026HQ
+   d. Channel: 1 (AP-1) or 6 (AP-2)
+4. Wireless clients (Laptop-PT with wireless NIC):
+   a. Desktop tab -> PC Wireless -> Connect to GlobalTech-HQ
+   b. Enter WPA2 passphrase
+   c. Set IP to DHCP
+
+==================================================================
+BRANCH WIRELESS ACCESS POINTS (BR01 - BR20)
+==================================================================
+
+------------------------------------------------------------------
+BR01 - CHATTOGRAM
+------------------------------------------------------------------
+AP Name:        BR01-AP
+Connected to:   BR01-SW FastEthernet0/6
+SSID:           GlobalTech-BR01
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiCHATTOGRAM2026
+Channel:        6 (2.4 GHz)
+Subnet:         10.1.1.0/24 (same as wired LAN)
+Gateway:        10.1.1.1 (branch router, DHCP relay active)
+DHCP Pool:      BR01-CHATTOGRAM on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR01-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR01 | WPA2-PSK: GlobalTech@WiFiCHATTOGRAM2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR02 - RAJSHAHI
+------------------------------------------------------------------
+AP Name:        BR02-AP
+Connected to:   BR02-SW FastEthernet0/6
+SSID:           GlobalTech-BR02
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiRAJSHAHI2026
+Channel:        11 (2.4 GHz)
+Subnet:         10.1.2.0/24 (same as wired LAN)
+Gateway:        10.1.2.1 (branch router, DHCP relay active)
+DHCP Pool:      BR02-RAJSHAHI on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR02-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR02 | WPA2-PSK: GlobalTech@WiFiRAJSHAHI2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR03 - KHULNA
+------------------------------------------------------------------
+AP Name:        BR03-AP
+Connected to:   BR03-SW FastEthernet0/6
+SSID:           GlobalTech-BR03
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiKHULNA2026
+Channel:        1 (2.4 GHz)
+Subnet:         10.1.3.0/24 (same as wired LAN)
+Gateway:        10.1.3.1 (branch router, DHCP relay active)
+DHCP Pool:      BR03-KHULNA on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR03-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR03 | WPA2-PSK: GlobalTech@WiFiKHULNA2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR04 - SYLHET
+------------------------------------------------------------------
+AP Name:        BR04-AP
+Connected to:   BR04-SW FastEthernet0/6
+SSID:           GlobalTech-BR04
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiSYLHET2026
+Channel:        6 (2.4 GHz)
+Subnet:         10.1.4.0/24 (same as wired LAN)
+Gateway:        10.1.4.1 (branch router, DHCP relay active)
+DHCP Pool:      BR04-SYLHET on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR04-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR04 | WPA2-PSK: GlobalTech@WiFiSYLHET2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR05 - BARISHAL
+------------------------------------------------------------------
+AP Name:        BR05-AP
+Connected to:   BR05-SW FastEthernet0/6
+SSID:           GlobalTech-BR05
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiBARISHAL2026
+Channel:        11 (2.4 GHz)
+Subnet:         10.1.5.0/24 (same as wired LAN)
+Gateway:        10.1.5.1 (branch router, DHCP relay active)
+DHCP Pool:      BR05-BARISHAL on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR05-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR05 | WPA2-PSK: GlobalTech@WiFiBARISHAL2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR06 - RANGPUR
+------------------------------------------------------------------
+AP Name:        BR06-AP
+Connected to:   BR06-SW FastEthernet0/6
+SSID:           GlobalTech-BR06
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiRANGPUR2026
+Channel:        1 (2.4 GHz)
+Subnet:         10.1.6.0/24 (same as wired LAN)
+Gateway:        10.1.6.1 (branch router, DHCP relay active)
+DHCP Pool:      BR06-RANGPUR on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR06-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR06 | WPA2-PSK: GlobalTech@WiFiRANGPUR2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR07 - MYMENSINGH
+------------------------------------------------------------------
+AP Name:        BR07-AP
+Connected to:   BR07-SW FastEthernet0/6
+SSID:           GlobalTech-BR07
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiMYMENSINGH2026
+Channel:        6 (2.4 GHz)
+Subnet:         10.1.7.0/24 (same as wired LAN)
+Gateway:        10.1.7.1 (branch router, DHCP relay active)
+DHCP Pool:      BR07-MYMENSINGH on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR07-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR07 | WPA2-PSK: GlobalTech@WiFiMYMENSINGH2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR08 - COMILLA
+------------------------------------------------------------------
+AP Name:        BR08-AP
+Connected to:   BR08-SW FastEthernet0/6
+SSID:           GlobalTech-BR08
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiCOMILLA2026
+Channel:        11 (2.4 GHz)
+Subnet:         10.1.8.0/24 (same as wired LAN)
+Gateway:        10.1.8.1 (branch router, DHCP relay active)
+DHCP Pool:      BR08-COMILLA on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR08-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR08 | WPA2-PSK: GlobalTech@WiFiCOMILLA2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR09 - GAZIPUR
+------------------------------------------------------------------
+AP Name:        BR09-AP
+Connected to:   BR09-SW FastEthernet0/6
+SSID:           GlobalTech-BR09
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiGAZIPUR2026
+Channel:        1 (2.4 GHz)
+Subnet:         10.1.9.0/24 (same as wired LAN)
+Gateway:        10.1.9.1 (branch router, DHCP relay active)
+DHCP Pool:      BR09-GAZIPUR on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR09-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR09 | WPA2-PSK: GlobalTech@WiFiGAZIPUR2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR10 - NARAYANGANJ
+------------------------------------------------------------------
+AP Name:        BR10-AP
+Connected to:   BR10-SW FastEthernet0/6
+SSID:           GlobalTech-BR10
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiNARAYANGANJ2026
+Channel:        6 (2.4 GHz)
+Subnet:         10.1.10.0/24 (same as wired LAN)
+Gateway:        10.1.10.1 (branch router, DHCP relay active)
+DHCP Pool:      BR10-NARAYANGANJ on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR10-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR10 | WPA2-PSK: GlobalTech@WiFiNARAYANGANJ2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR11 - BOGRA
+------------------------------------------------------------------
+AP Name:        BR11-AP
+Connected to:   BR11-SW FastEthernet0/6
+SSID:           GlobalTech-BR11
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiBOGRA2026
+Channel:        11 (2.4 GHz)
+Subnet:         10.1.11.0/24 (same as wired LAN)
+Gateway:        10.1.11.1 (branch router, DHCP relay active)
+DHCP Pool:      BR11-BOGRA on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR11-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR11 | WPA2-PSK: GlobalTech@WiFiBOGRA2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR12 - COXS-BAZAR
+------------------------------------------------------------------
+AP Name:        BR12-AP
+Connected to:   BR12-SW FastEthernet0/6
+SSID:           GlobalTech-BR12
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiCOXS-BAZAR2026
+Channel:        1 (2.4 GHz)
+Subnet:         10.1.12.0/24 (same as wired LAN)
+Gateway:        10.1.12.1 (branch router, DHCP relay active)
+DHCP Pool:      BR12-COXS-BAZAR on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR12-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR12 | WPA2-PSK: GlobalTech@WiFiCOXS-BAZAR2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR13 - JESSORE
+------------------------------------------------------------------
+AP Name:        BR13-AP
+Connected to:   BR13-SW FastEthernet0/6
+SSID:           GlobalTech-BR13
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiJESSORE2026
+Channel:        6 (2.4 GHz)
+Subnet:         10.1.13.0/24 (same as wired LAN)
+Gateway:        10.1.13.1 (branch router, DHCP relay active)
+DHCP Pool:      BR13-JESSORE on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR13-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR13 | WPA2-PSK: GlobalTech@WiFiJESSORE2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR14 - DINAJPUR
+------------------------------------------------------------------
+AP Name:        BR14-AP
+Connected to:   BR14-SW FastEthernet0/6
+SSID:           GlobalTech-BR14
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiDINAJPUR2026
+Channel:        11 (2.4 GHz)
+Subnet:         10.1.14.0/24 (same as wired LAN)
+Gateway:        10.1.14.1 (branch router, DHCP relay active)
+DHCP Pool:      BR14-DINAJPUR on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR14-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR14 | WPA2-PSK: GlobalTech@WiFiDINAJPUR2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR15 - TANGAIL
+------------------------------------------------------------------
+AP Name:        BR15-AP
+Connected to:   BR15-SW FastEthernet0/6
+SSID:           GlobalTech-BR15
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiTANGAIL2026
+Channel:        1 (2.4 GHz)
+Subnet:         10.1.15.0/24 (same as wired LAN)
+Gateway:        10.1.15.1 (branch router, DHCP relay active)
+DHCP Pool:      BR15-TANGAIL on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR15-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR15 | WPA2-PSK: GlobalTech@WiFiTANGAIL2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR16 - BRAHMANBARIA
+------------------------------------------------------------------
+AP Name:        BR16-AP
+Connected to:   BR16-SW FastEthernet0/6
+SSID:           GlobalTech-BR16
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiBRAHMANBARIA2026
+Channel:        6 (2.4 GHz)
+Subnet:         10.1.16.0/24 (same as wired LAN)
+Gateway:        10.1.16.1 (branch router, DHCP relay active)
+DHCP Pool:      BR16-BRAHMANBARIA on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR16-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR16 | WPA2-PSK: GlobalTech@WiFiBRAHMANBARIA2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR17 - NARSINGDI
+------------------------------------------------------------------
+AP Name:        BR17-AP
+Connected to:   BR17-SW FastEthernet0/6
+SSID:           GlobalTech-BR17
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiNARSINGDI2026
+Channel:        11 (2.4 GHz)
+Subnet:         10.1.17.0/24 (same as wired LAN)
+Gateway:        10.1.17.1 (branch router, DHCP relay active)
+DHCP Pool:      BR17-NARSINGDI on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR17-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR17 | WPA2-PSK: GlobalTech@WiFiNARSINGDI2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR18 - SAVAR
+------------------------------------------------------------------
+AP Name:        BR18-AP
+Connected to:   BR18-SW FastEthernet0/6
+SSID:           GlobalTech-BR18
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiSAVAR2026
+Channel:        1 (2.4 GHz)
+Subnet:         10.1.18.0/24 (same as wired LAN)
+Gateway:        10.1.18.1 (branch router, DHCP relay active)
+DHCP Pool:      BR18-SAVAR on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR18-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR18 | WPA2-PSK: GlobalTech@WiFiSAVAR2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR19 - TONGI
+------------------------------------------------------------------
+AP Name:        BR19-AP
+Connected to:   BR19-SW FastEthernet0/6
+SSID:           GlobalTech-BR19
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiTONGI2026
+Channel:        6 (2.4 GHz)
+Subnet:         10.1.19.0/24 (same as wired LAN)
+Gateway:        10.1.19.1 (branch router, DHCP relay active)
+DHCP Pool:      BR19-TONGI on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR19-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR19 | WPA2-PSK: GlobalTech@WiFiTONGI2026
+3. Wireless laptops connect and get DHCP from central server.
+
+------------------------------------------------------------------
+BR20 - FARIDPUR
+------------------------------------------------------------------
+AP Name:        BR20-AP
+Connected to:   BR20-SW FastEthernet0/6
+SSID:           GlobalTech-BR20
+Security:       WPA2-PSK
+Passphrase:     GlobalTech@WiFiFARIDPUR2026
+Channel:        11 (2.4 GHz)
+Subnet:         10.1.20.0/24 (same as wired LAN)
+Gateway:        10.1.20.1 (branch router, DHCP relay active)
+DHCP Pool:      BR20-FARIDPUR on central DHCP (10.10.70.10)
+
+Packet Tracer Setup:
+1. Place AccessPoint-PT, connect to BR20-SW Fa0/6.
+2. Config -> SSID: GlobalTech-BR20 | WPA2-PSK: GlobalTech@WiFiFARIDPUR2026
+3. Wireless laptops connect and get DHCP from central server.
+
+==================================================================
+WIRELESS SECURITY BEST PRACTICES
+==================================================================
+
+1. WPA2-PSK (AES) is used for all access points.
+   - In production, WPA2/WPA3-Enterprise with RADIUS is recommended.
+   - WPA2-PSK is used here due to Packet Tracer limitations.
+
+2. Each branch has a unique SSID and passphrase.
+   - Prevents credential reuse across locations.
+
+3. Wireless clients share the branch LAN subnet.
+   - In production, a separate wireless VLAN is recommended.
+   - HQ uses a dedicated VLAN 90 for wireless.
+
+4. AP channels are staggered (1, 6, 11) to minimize interference.
+
+5. MAC filtering can be enabled on APs for additional security
+   (not configured by default due to management overhead).
+
+6. Guest wireless at HQ uses VLAN 80 (GUEST) with restrictive ACLs:
+   - DNS and Web access only
+   - No access to internal department VLANs or branch networks
+
+==================================================================
+WIRELESS CLIENT PC CONFIGURATION (Packet Tracer)
+==================================================================
+
+For Laptop-PT devices with wireless NICs:
+1. Click Laptop -> Physical tab
+   - Power off, remove Ethernet module (if present)
+   - Add WPC300N (wireless module)
+   - Power on
+2. Desktop tab -> PC Wireless
+   - Scan for networks -> Select SSID
+   - Enter WPA2 passphrase
+   - Connect
+3. Desktop tab -> IP Configuration -> DHCP
+4. Verify: Command Prompt -> ping 10.10.70.50 (Web Server)
+   Should receive reply confirming wireless connectivity.
+==================================================================

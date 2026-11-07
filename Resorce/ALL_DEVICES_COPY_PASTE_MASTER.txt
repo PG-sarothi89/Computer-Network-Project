@@ -1,0 +1,5972 @@
+==============================================================================
+GLOBALTECH INDUSTRIES LTD. - MASTER PACKET TRACER CLI BUILD SCRIPT
+Course: ICE 2208 Computer Network Lab - BUP
+Instructions: Click each device in Packet Tracer -> CLI tab -> Paste the block!
+==============================================================================
+
+
+##############################################################################
+### 1. HQ CORE SWITCH 1 (HSRP ACTIVE)
+### FILE: HQ-CORE1.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - HQ CORE SWITCH 1 (HQ-CORE1)
+! Model: Cisco 3560/3650 (Layer 3 Switch)
+! Role: Primary Inter-VLAN Gateway (HSRP), OSPF Core
+! 9 VLANs: Admin, Finance, HR, IT, Security/NOC, Mgmt, Servers, Guest, Wireless
+! ================================================================
+enable
+configure terminal
+
+hostname HQ-CORE1
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+ip routing
+
+! --- VLAN Database ---
+vlan 10
+ name ADMINISTRATION
+vlan 20
+ name FINANCE
+vlan 30
+ name HUMAN_RESOURCES
+vlan 40
+ name INFORMATION_TECH
+vlan 50
+ name SECURITY_NOC
+vlan 60
+ name MANAGEMENT
+vlan 70
+ name SERVERS
+vlan 80
+ name GUEST
+vlan 90
+ name WIRELESS_HQ
+exit
+
+! --- SVI Interfaces with HSRP ---
+
+interface Vlan10
+ description HQ-ADMINISTRATION
+ ip address 10.10.10.2 255.255.255.0
+ standby 10 ip 10.10.10.1
+ standby 10 priority 110
+ standby 10 preempt
+ no shutdown
+
+interface Vlan20
+ description HQ-FINANCE
+ ip address 10.10.20.2 255.255.255.0
+ standby 20 ip 10.10.20.1
+ standby 20 priority 110
+ standby 20 preempt
+ no shutdown
+
+interface Vlan30
+ description HQ-HUMAN_RESOURCES
+ ip address 10.10.30.2 255.255.255.0
+ standby 30 ip 10.10.30.1
+ standby 30 priority 110
+ standby 30 preempt
+ no shutdown
+
+interface Vlan40
+ description HQ-INFORMATION_TECH
+ ip address 10.10.40.2 255.255.255.0
+ standby 40 ip 10.10.40.1
+ standby 40 priority 110
+ standby 40 preempt
+ no shutdown
+
+interface Vlan50
+ description HQ-SECURITY_NOC
+ ip address 10.10.50.2 255.255.255.0
+ standby 50 ip 10.10.50.1
+ standby 50 priority 110
+ standby 50 preempt
+ no shutdown
+
+interface Vlan60
+ description HQ-MANAGEMENT
+ ip address 10.10.60.2 255.255.255.0
+ standby 60 ip 10.10.60.1
+ standby 60 priority 110
+ standby 60 preempt
+ no shutdown
+
+interface Vlan70
+ description HQ-SERVERS
+ ip address 10.10.70.2 255.255.255.0
+ standby 70 ip 10.10.70.1
+ standby 70 priority 110
+ standby 70 preempt
+ no shutdown
+
+interface Vlan80
+ description HQ-GUEST
+ ip address 10.10.80.2 255.255.255.0
+ standby 80 ip 10.10.80.1
+ standby 80 priority 110
+ standby 80 preempt
+ no shutdown
+
+interface Vlan90
+ description HQ-WIRELESS_HQ
+ ip address 10.10.90.2 255.255.255.0
+ standby 90 ip 10.10.90.1
+ standby 90 priority 110
+ standby 90 preempt
+ no shutdown
+
+! --- Inter-Core Link ---
+interface GigabitEthernet0/1
+ description LINK-TO-HQ-CORE2
+ no switchport
+ ip address 10.10.99.1 255.255.255.252
+ no shutdown
+
+! --- Uplinks to Edge Routers ---
+interface GigabitEthernet0/2
+ description UPLINK-TO-HQ-EDGE-R1
+ no switchport
+ ip address 10.10.100.1 255.255.255.252
+ no shutdown
+
+interface GigabitEthernet0/3
+ description UPLINK-TO-HQ-EDGE-R2
+ no switchport
+ ip address 10.10.100.5 255.255.255.252
+ no shutdown
+
+! --- Trunk Ports to HQ Access Switches ---
+interface GigabitEthernet0/4
+ description TRUNK-TO-HQ-ACCESS-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90
+ no shutdown
+
+interface GigabitEthernet0/5
+ description TRUNK-TO-HQ-ACCESS-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90
+ no shutdown
+
+! --- OSPF ---
+router ospf 10
+ router-id 10.10.10.2
+ network 10.10.10.0 0.0.0.255 area 0
+ network 10.10.20.0 0.0.0.255 area 0
+ network 10.10.30.0 0.0.0.255 area 0
+ network 10.10.40.0 0.0.0.255 area 0
+ network 10.10.50.0 0.0.0.255 area 0
+ network 10.10.60.0 0.0.0.255 area 0
+ network 10.10.70.0 0.0.0.255 area 0
+ network 10.10.80.0 0.0.0.255 area 0
+ network 10.10.90.0 0.0.0.255 area 0
+ network 10.10.99.0 0.0.0.3 area 0
+ network 10.10.100.0 0.0.0.3 area 0
+ network 10.10.100.4 0.0.0.3 area 0
+ passive-interface Vlan10
+ passive-interface Vlan20
+ passive-interface Vlan30
+ passive-interface Vlan40
+ passive-interface Vlan50
+ passive-interface Vlan60
+ passive-interface Vlan70
+ passive-interface Vlan80
+ passive-interface Vlan90
+
+! --- DHCP Snooping (Security) ---
+ip dhcp snooping
+ip dhcp snooping vlan 10,20,30,40,50,60,80,90
+interface GigabitEthernet0/4
+ ip dhcp snooping trust
+interface GigabitEthernet0/5
+ ip dhcp snooping trust
+
+! --- SSH ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES - HQ CORE SWITCH 1 (ACTIVE GATEWAY)
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### 2. HQ CORE SWITCH 2 (HSRP STANDBY)
+### FILE: HQ-CORE2.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - HQ CORE SWITCH 2 (HQ-CORE2)
+! Model: Cisco 3560/3650 (Layer 3 Switch)
+! Role: Standby Inter-VLAN Gateway (HSRP), OSPF Core
+! 9 VLANs: Admin, Finance, HR, IT, Security/NOC, Mgmt, Servers, Guest, Wireless
+! ================================================================
+enable
+configure terminal
+
+hostname HQ-CORE2
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+ip routing
+
+! --- VLAN Database ---
+vlan 10
+ name ADMINISTRATION
+vlan 20
+ name FINANCE
+vlan 30
+ name HUMAN_RESOURCES
+vlan 40
+ name INFORMATION_TECH
+vlan 50
+ name SECURITY_NOC
+vlan 60
+ name MANAGEMENT
+vlan 70
+ name SERVERS
+vlan 80
+ name GUEST
+vlan 90
+ name WIRELESS_HQ
+exit
+
+! --- SVI Interfaces with HSRP ---
+
+interface Vlan10
+ description HQ-ADMINISTRATION
+ ip address 10.10.10.3 255.255.255.0
+ standby 10 ip 10.10.10.1
+ standby 10 priority 100
+ no shutdown
+
+interface Vlan20
+ description HQ-FINANCE
+ ip address 10.10.20.3 255.255.255.0
+ standby 20 ip 10.10.20.1
+ standby 20 priority 100
+ no shutdown
+
+interface Vlan30
+ description HQ-HUMAN_RESOURCES
+ ip address 10.10.30.3 255.255.255.0
+ standby 30 ip 10.10.30.1
+ standby 30 priority 100
+ no shutdown
+
+interface Vlan40
+ description HQ-INFORMATION_TECH
+ ip address 10.10.40.3 255.255.255.0
+ standby 40 ip 10.10.40.1
+ standby 40 priority 100
+ no shutdown
+
+interface Vlan50
+ description HQ-SECURITY_NOC
+ ip address 10.10.50.3 255.255.255.0
+ standby 50 ip 10.10.50.1
+ standby 50 priority 100
+ no shutdown
+
+interface Vlan60
+ description HQ-MANAGEMENT
+ ip address 10.10.60.3 255.255.255.0
+ standby 60 ip 10.10.60.1
+ standby 60 priority 100
+ no shutdown
+
+interface Vlan70
+ description HQ-SERVERS
+ ip address 10.10.70.3 255.255.255.0
+ standby 70 ip 10.10.70.1
+ standby 70 priority 100
+ no shutdown
+
+interface Vlan80
+ description HQ-GUEST
+ ip address 10.10.80.3 255.255.255.0
+ standby 80 ip 10.10.80.1
+ standby 80 priority 100
+ no shutdown
+
+interface Vlan90
+ description HQ-WIRELESS_HQ
+ ip address 10.10.90.3 255.255.255.0
+ standby 90 ip 10.10.90.1
+ standby 90 priority 100
+ no shutdown
+
+! --- Inter-Core Link ---
+interface GigabitEthernet0/1
+ description LINK-TO-HQ-CORE1
+ no switchport
+ ip address 10.10.99.2 255.255.255.252
+ no shutdown
+
+! --- Uplinks to Edge Routers ---
+interface GigabitEthernet0/2
+ description UPLINK-TO-HQ-EDGE-R1
+ no switchport
+ ip address 10.10.100.9 255.255.255.252
+ no shutdown
+
+interface GigabitEthernet0/3
+ description UPLINK-TO-HQ-EDGE-R2
+ no switchport
+ ip address 10.10.100.13 255.255.255.252
+ no shutdown
+
+! --- Trunk Ports to HQ Access Switches ---
+interface GigabitEthernet0/4
+ description TRUNK-TO-HQ-ACCESS-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90
+ no shutdown
+
+interface GigabitEthernet0/5
+ description TRUNK-TO-HQ-ACCESS-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90
+ no shutdown
+
+! --- OSPF ---
+router ospf 10
+ router-id 10.10.10.3
+ network 10.10.10.0 0.0.0.255 area 0
+ network 10.10.20.0 0.0.0.255 area 0
+ network 10.10.30.0 0.0.0.255 area 0
+ network 10.10.40.0 0.0.0.255 area 0
+ network 10.10.50.0 0.0.0.255 area 0
+ network 10.10.60.0 0.0.0.255 area 0
+ network 10.10.70.0 0.0.0.255 area 0
+ network 10.10.80.0 0.0.0.255 area 0
+ network 10.10.90.0 0.0.0.255 area 0
+ network 10.10.99.0 0.0.0.3 area 0
+ network 10.10.100.8 0.0.0.3 area 0
+ network 10.10.100.12 0.0.0.3 area 0
+ passive-interface Vlan10
+ passive-interface Vlan20
+ passive-interface Vlan30
+ passive-interface Vlan40
+ passive-interface Vlan50
+ passive-interface Vlan60
+ passive-interface Vlan70
+ passive-interface Vlan80
+ passive-interface Vlan90
+
+! --- DHCP Snooping (Security) ---
+ip dhcp snooping
+ip dhcp snooping vlan 10,20,30,40,50,60,80,90
+interface GigabitEthernet0/4
+ ip dhcp snooping trust
+interface GigabitEthernet0/5
+ ip dhcp snooping trust
+
+! --- SSH ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES - HQ CORE SWITCH 2 (STANDBY GATEWAY)
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### 3. HQ PRIMARY EDGE ROUTER (NAT/PAT/IPSEC)
+### FILE: HQ-EDGE-R1.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - HQ EDGE ROUTER 1 (HQ-EDGE-R1)
+! Model: Cisco 4331 ISR (with NM-4A/S and HWIC-2T modules added)
+! Role: Primary WAN Aggregation
+!       Branches BR01-BR10 (Primary)
+!       + NAT/PAT + IPSec VPN Termination
+! MODULE SETUP IN PACKET TRACER:
+!   Power off router -> Physical tab -> Add HWIC-2T modules to slots
+!   to provide enough Serial interfaces for all branch WAN links.
+! ================================================================
+enable
+configure terminal
+
+hostname HQ-EDGE-R1
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- Core Downlinks ---
+interface GigabitEthernet0/0
+ description DOWNLINK-TO-HQ-CORE1
+ ip address 10.10.100.2 255.255.255.252
+ ip nat inside
+ no shutdown
+
+interface GigabitEthernet0/1
+ description DOWNLINK-TO-HQ-CORE2
+ ip address 10.10.100.8 255.255.255.252
+ ip nat inside
+ no shutdown
+
+! --- ISP / Internet Uplink ---
+interface GigabitEthernet0/2
+ description UPLINK-TO-INTERNET-ISP
+ ip address 203.0.113.2 255.255.255.252
+ ip nat outside
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 203.0.113.1
+
+! --- WAN Links to Regional Branches ---
+
+interface Serial0/0/0
+ description WAN-PRIMARY-BR01-CHATTOGRAM
+ ip address 172.16.1.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+ crypto map CMAP-GLOBALTECH
+
+interface Serial0/0/1
+ description WAN-PRIMARY-BR02-RAJSHAHI
+ ip address 172.16.2.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/1/0
+ description WAN-PRIMARY-BR03-KHULNA
+ ip address 172.16.3.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/1/1
+ description WAN-PRIMARY-BR04-SYLHET
+ ip address 172.16.4.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/2/0
+ description WAN-PRIMARY-BR05-BARISHAL
+ ip address 172.16.5.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/2/1
+ description WAN-PRIMARY-BR06-RANGPUR
+ ip address 172.16.6.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/3/0
+ description WAN-PRIMARY-BR07-MYMENSINGH
+ ip address 172.16.7.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/3/1
+ description WAN-PRIMARY-BR08-COMILLA
+ ip address 172.16.8.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/4/0
+ description WAN-PRIMARY-BR09-GAZIPUR
+ ip address 172.16.9.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/4/1
+ description WAN-PRIMARY-BR10-NARAYANGANJ
+ ip address 172.16.10.1 255.255.255.252
+ ip nat inside
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+! --- IPSec VPN (HQ <-> BR01 Chattogram Demo Tunnel) ---
+crypto isakmp policy 10
+ encr aes
+ hash sha
+ authentication pre-share
+ group 2
+ lifetime 86400
+exit
+crypto isakmp key GlobalTechIPSecSecret2026 address 172.16.1.2
+crypto ipsec transform-set TS-GLOBALTECH esp-aes esp-sha-hmac
+ mode tunnel
+exit
+ip access-list extended ACL-IPSEC-VPN
+ permit ip 10.10.0.0 0.0.255.255 10.1.1.0 0.0.0.255
+exit
+crypto map CMAP-GLOBALTECH 10 ipsec-isakmp
+ set peer 172.16.1.2
+ set transform-set TS-GLOBALTECH
+ match address ACL-IPSEC-VPN
+exit
+
+! --- OSPF ---
+router ospf 10
+ router-id 172.16.0.1
+ network 10.10.100.0 0.0.0.3 area 0
+ network 10.10.100.8 0.0.0.3 area 0
+ network 172.16.1.0 0.0.0.3 area 0
+ network 172.16.2.0 0.0.0.3 area 0
+ network 172.16.3.0 0.0.0.3 area 0
+ network 172.16.4.0 0.0.0.3 area 0
+ network 172.16.5.0 0.0.0.3 area 0
+ network 172.16.6.0 0.0.0.3 area 0
+ network 172.16.7.0 0.0.0.3 area 0
+ network 172.16.8.0 0.0.0.3 area 0
+ network 172.16.9.0 0.0.0.3 area 0
+ network 172.16.10.0 0.0.0.3 area 0
+ default-information originate
+ passive-interface GigabitEthernet0/2
+
+! --- NAT/PAT ---
+ip access-list standard NAT-PERMITTED-NETWORKS
+ permit 10.10.0.0 0.0.255.255
+ permit 10.1.0.0 0.0.255.255
+exit
+ip nat inside source list NAT-PERMITTED-NETWORKS interface GigabitEthernet0/2 overload
+
+! --- Guest VLAN Security ACL ---
+ip access-list extended ACL-GUEST-RESTRICT
+ remark Allow Guest DNS + HTTP/HTTPS only, deny internal
+ permit udp 10.10.80.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit tcp 10.10.80.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit tcp 10.10.80.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.10.80.0 0.0.0.255 host 10.10.70.50 eq 443
+ deny   ip 10.10.80.0 0.0.0.255 10.10.0.0 0.0.255.255
+ deny   ip 10.10.80.0 0.0.0.255 10.1.0.0 0.0.255.255
+ permit ip any any
+exit
+
+! --- SSH ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+logging 10.10.70.60
+ntp server 10.10.70.60
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES - HQ EDGE ROUTER 1 (PRIMARY WAN)
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### 4. HQ BACKUP EDGE ROUTER
+### FILE: HQ-EDGE-R2.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - HQ EDGE ROUTER 2 (HQ-EDGE-R2)
+! Model: Cisco 4331 ISR (with NM-4A/S and HWIC-2T modules added)
+! Role: Secondary WAN Aggregation
+!       Branches BR11-BR20 (Primary)
+!       + Backup WAN for BR01-BR05
+! MODULE SETUP IN PACKET TRACER:
+!   Power off router -> Physical tab -> Add HWIC-2T modules to slots
+!   to provide enough Serial interfaces for all branch WAN links.
+! ================================================================
+enable
+configure terminal
+
+hostname HQ-EDGE-R2
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- Core Downlinks ---
+interface GigabitEthernet0/0
+ description DOWNLINK-TO-HQ-CORE1
+ ip address 10.10.100.10 255.255.255.252
+ no shutdown
+
+interface GigabitEthernet0/1
+ description DOWNLINK-TO-HQ-CORE2
+ ip address 10.10.100.16 255.255.255.252
+ no shutdown
+
+! --- WAN Links to Regional Branches ---
+
+interface Serial0/0/0
+ description WAN-PRIMARY-BR11-BOGRA
+ ip address 172.16.11.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/0/1
+ description WAN-PRIMARY-BR12-COXS-BAZAR
+ ip address 172.16.12.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/1/0
+ description WAN-PRIMARY-BR13-JESSORE
+ ip address 172.16.13.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/1/1
+ description WAN-PRIMARY-BR14-DINAJPUR
+ ip address 172.16.14.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/2/0
+ description WAN-PRIMARY-BR15-TANGAIL
+ ip address 172.16.15.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/2/1
+ description WAN-PRIMARY-BR16-BRAHMANBARIA
+ ip address 172.16.16.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/3/0
+ description WAN-PRIMARY-BR17-NARSINGDI
+ ip address 172.16.17.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/3/1
+ description WAN-PRIMARY-BR18-SAVAR
+ ip address 172.16.18.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/4/0
+ description WAN-PRIMARY-BR19-TONGI
+ ip address 172.16.19.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/4/1
+ description WAN-PRIMARY-BR20-FARIDPUR
+ ip address 172.16.20.1 255.255.255.252
+ ip ospf cost 10
+ clock rate 2000000
+ no shutdown
+
+! --- Backup WAN Links for BR01-BR05 (Higher OSPF Cost) ---
+
+interface Serial0/5/0
+ description WAN-BACKUP-BR01-CHATTOGRAM
+ ip address 172.16.101.1 255.255.255.252
+ ip ospf cost 100
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/5/1
+ description WAN-BACKUP-BR02-RAJSHAHI
+ ip address 172.16.102.1 255.255.255.252
+ ip ospf cost 100
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/6/0
+ description WAN-BACKUP-BR03-KHULNA
+ ip address 172.16.103.1 255.255.255.252
+ ip ospf cost 100
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/6/1
+ description WAN-BACKUP-BR04-SYLHET
+ ip address 172.16.104.1 255.255.255.252
+ ip ospf cost 100
+ clock rate 2000000
+ no shutdown
+
+interface Serial0/7/0
+ description WAN-BACKUP-BR05-BARISHAL
+ ip address 172.16.105.1 255.255.255.252
+ ip ospf cost 100
+ clock rate 2000000
+ no shutdown
+
+! --- OSPF ---
+router ospf 10
+ router-id 172.16.0.2
+ network 10.10.100.8 0.0.0.3 area 0
+ network 10.10.100.16 0.0.0.3 area 0
+ network 172.16.11.0 0.0.0.3 area 0
+ network 172.16.12.0 0.0.0.3 area 0
+ network 172.16.13.0 0.0.0.3 area 0
+ network 172.16.14.0 0.0.0.3 area 0
+ network 172.16.15.0 0.0.0.3 area 0
+ network 172.16.16.0 0.0.0.3 area 0
+ network 172.16.17.0 0.0.0.3 area 0
+ network 172.16.18.0 0.0.0.3 area 0
+ network 172.16.19.0 0.0.0.3 area 0
+ network 172.16.20.0 0.0.0.3 area 0
+ network 172.16.101.0 0.0.0.3 area 0
+ network 172.16.102.0 0.0.0.3 area 0
+ network 172.16.103.0 0.0.0.3 area 0
+ network 172.16.104.0 0.0.0.3 area 0
+ network 172.16.105.0 0.0.0.3 area 0
+
+! --- SSH ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+logging 10.10.70.60
+ntp server 10.10.70.60
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES - HQ EDGE ROUTER 2 (SECONDARY WAN)
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### 5. HQ ACCESS SWITCH 1 (DEPT VLANS 10-30, SERVERS)
+### FILE: HQ-ACCESS-SW1.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - HQ ACCESS SWITCH 1 (HQ-ACCESS-SW1)
+! Model: Cisco 2960-48 (Layer 2)
+! Trunk uplinks to CORE1 and CORE2
+! Access ports assigned to department VLANs with port security
+! ================================================================
+enable
+configure terminal
+
+hostname HQ-ACCESS-SW1
+no ip domain-lookup
+service password-encryption
+
+! --- VLAN Database ---
+vlan 10
+ name ADMINISTRATION
+vlan 20
+ name FINANCE
+vlan 30
+ name HUMAN_RESOURCES
+vlan 40
+ name INFORMATION_TECH
+vlan 50
+ name SECURITY_NOC
+vlan 60
+ name MANAGEMENT
+vlan 70
+ name SERVERS
+vlan 80
+ name GUEST
+vlan 90
+ name WIRELESS_HQ
+exit
+
+! --- Trunk Uplinks ---
+interface GigabitEthernet0/1
+ description TRUNK-TO-HQ-CORE1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90
+ no shutdown
+
+interface GigabitEthernet0/2
+ description TRUNK-TO-HQ-CORE2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90
+ no shutdown
+
+! --- ADMINISTRATION VLAN 10 (3 PCs) ---
+interface range FastEthernet0/1-3
+ description HQ-ADMIN-PC
+ switchport mode access
+ switchport access vlan 10
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- FINANCE VLAN 20 (3 PCs) ---
+interface range FastEthernet0/4-6
+ description HQ-FINANCE-PC
+ switchport mode access
+ switchport access vlan 20
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- HR VLAN 30 (2 PCs) ---
+interface range FastEthernet0/7-8
+ description HQ-HR-PC
+ switchport mode access
+ switchport access vlan 30
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- SERVER FARM VLAN 70 (6 Servers) ---
+interface range FastEthernet0/9-14
+ description HQ-SERVER
+ switchport mode access
+ switchport access vlan 70
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless AP 1 (HQ) VLAN 90 ---
+interface FastEthernet0/15
+ description HQ-WIRELESS-AP-1
+ switchport mode access
+ switchport access vlan 90
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports ---
+interface range FastEthernet0/16-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+! --- Management SVI ---
+interface Vlan60
+ ip address 10.10.60.251 255.255.255.0
+ no shutdown
+ip default-gateway 10.10.60.1
+
+! --- SSH ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - HQ ACCESS SWITCH 1 | PORT SECURITY ENABLED
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### 6. HQ ACCESS SWITCH 2 (DEPT VLANS 40-90, WIRELESS)
+### FILE: HQ-ACCESS-SW2.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - HQ ACCESS SWITCH 2 (HQ-ACCESS-SW2)
+! Model: Cisco 2960-48 (Layer 2)
+! Trunk uplinks to CORE1 and CORE2
+! Access ports assigned to department VLANs with port security
+! ================================================================
+enable
+configure terminal
+
+hostname HQ-ACCESS-SW2
+no ip domain-lookup
+service password-encryption
+
+! --- VLAN Database ---
+vlan 10
+ name ADMINISTRATION
+vlan 20
+ name FINANCE
+vlan 30
+ name HUMAN_RESOURCES
+vlan 40
+ name INFORMATION_TECH
+vlan 50
+ name SECURITY_NOC
+vlan 60
+ name MANAGEMENT
+vlan 70
+ name SERVERS
+vlan 80
+ name GUEST
+vlan 90
+ name WIRELESS_HQ
+exit
+
+! --- Trunk Uplinks ---
+interface GigabitEthernet0/1
+ description TRUNK-TO-HQ-CORE1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90
+ no shutdown
+
+interface GigabitEthernet0/2
+ description TRUNK-TO-HQ-CORE2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90
+ no shutdown
+
+! --- IT VLAN 40 (3 PCs) ---
+interface range FastEthernet0/1-3
+ description HQ-IT-PC
+ switchport mode access
+ switchport access vlan 40
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- SECURITY/NOC VLAN 50 (2 PCs) ---
+interface range FastEthernet0/4-5
+ description HQ-NOC-PC
+ switchport mode access
+ switchport access vlan 50
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- MANAGEMENT VLAN 60 (1 PC) ---
+interface FastEthernet0/6
+ description HQ-MGMT-PC
+ switchport mode access
+ switchport access vlan 60
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- GUEST VLAN 80 (1 Laptop) ---
+interface FastEthernet0/7
+ description HQ-GUEST-LAPTOP
+ switchport mode access
+ switchport access vlan 80
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless AP 2 (HQ) VLAN 90 ---
+interface FastEthernet0/8
+ description HQ-WIRELESS-AP-2
+ switchport mode access
+ switchport access vlan 90
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports ---
+interface range FastEthernet0/9-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+! --- Management SVI ---
+interface Vlan60
+ ip address 10.10.60.252 255.255.255.0
+ no shutdown
+ip default-gateway 10.10.60.1
+
+! --- SSH ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - HQ ACCESS SWITCH 2 | PORT SECURITY ENABLED
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 01 ROUTER (BR01-R)
+### FILE: BR01-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR01 CHATTOGRAM BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.1.0/24  Gateway: 10.1.1.1
+! Primary WAN: 172.16.1.0/30  (to HQ-EDGE-R1)
+! Backup  WAN: 172.16.101.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR01-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR01-LAN-CHATTOGRAM
+ ip address 10.1.1.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.1.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+ crypto map CMAP-GLOBALTECH
+
+! --- Backup WAN Link (higher OSPF cost) ---
+interface Serial0/0/1
+ description WAN-BACKUP-TO-HQ
+ ip address 172.16.101.2 255.255.255.252
+ ip ospf cost 100
+ no shutdown
+
+! --- IPSec Site-to-Site VPN (BR01 <-> HQ Demo Tunnel) ---
+crypto isakmp policy 10
+ encr aes
+ hash sha
+ authentication pre-share
+ group 2
+ lifetime 86400
+exit
+crypto isakmp key GlobalTechIPSecSecret2026 address 172.16.1.1
+crypto ipsec transform-set TS-GLOBALTECH esp-aes esp-sha-hmac
+ mode tunnel
+exit
+ip access-list extended ACL-IPSEC-VPN
+ permit ip 10.1.1.0 0.0.0.255 10.10.0.0 0.0.255.255
+exit
+crypto map CMAP-GLOBALTECH 10 ipsec-isakmp
+ set peer 172.16.1.1
+ set transform-set TS-GLOBALTECH
+ match address ACL-IPSEC-VPN
+exit
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.1.1
+ network 10.1.1.0 0.0.0.255 area 0
+ network 172.16.1.0 0.0.0.3 area 0
+ network 172.16.101.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR01-SECURITY
+ remark === Branch CHATTOGRAM Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.1.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.1.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.1.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.1.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.1.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.1.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.1.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.1.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.1.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.1.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.1.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR01-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR01 CHATTOGRAM
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 01 ACCESS SWITCH (BR01-SW)
+### FILE: BR01-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR01 CHATTOGRAM ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR01-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR01-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR01-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR01-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR01-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR01-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR01-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR01-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.1.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.1.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR01-SW CHATTOGRAM | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 02 ROUTER (BR02-R)
+### FILE: BR02-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR02 RAJSHAHI BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.2.0/24  Gateway: 10.1.2.1
+! Primary WAN: 172.16.2.0/30  (to HQ-EDGE-R1)
+! Backup  WAN: 172.16.102.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR02-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR02-LAN-RAJSHAHI
+ ip address 10.1.2.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.2.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- Backup WAN Link (higher OSPF cost) ---
+interface Serial0/0/1
+ description WAN-BACKUP-TO-HQ
+ ip address 172.16.102.2 255.255.255.252
+ ip ospf cost 100
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.2.1
+ network 10.1.2.0 0.0.0.255 area 0
+ network 172.16.2.0 0.0.0.3 area 0
+ network 172.16.102.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR02-SECURITY
+ remark === Branch RAJSHAHI Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.2.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.2.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.2.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.2.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.2.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.2.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.2.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.2.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.2.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.2.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.2.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR02-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR02 RAJSHAHI
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 02 ACCESS SWITCH (BR02-SW)
+### FILE: BR02-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR02 RAJSHAHI ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR02-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR02-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR02-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR02-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR02-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR02-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR02-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR02-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.2.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.2.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR02-SW RAJSHAHI | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 03 ROUTER (BR03-R)
+### FILE: BR03-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR03 KHULNA BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.3.0/24  Gateway: 10.1.3.1
+! Primary WAN: 172.16.3.0/30  (to HQ-EDGE-R1)
+! Backup  WAN: 172.16.103.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR03-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR03-LAN-KHULNA
+ ip address 10.1.3.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.3.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- Backup WAN Link (higher OSPF cost) ---
+interface Serial0/0/1
+ description WAN-BACKUP-TO-HQ
+ ip address 172.16.103.2 255.255.255.252
+ ip ospf cost 100
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.3.1
+ network 10.1.3.0 0.0.0.255 area 0
+ network 172.16.3.0 0.0.0.3 area 0
+ network 172.16.103.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR03-SECURITY
+ remark === Branch KHULNA Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.3.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.3.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.3.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.3.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.3.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.3.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.3.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.3.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.3.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.3.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.3.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR03-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR03 KHULNA
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 03 ACCESS SWITCH (BR03-SW)
+### FILE: BR03-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR03 KHULNA ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR03-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR03-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR03-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR03-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR03-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR03-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR03-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR03-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.3.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.3.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR03-SW KHULNA | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 04 ROUTER (BR04-R)
+### FILE: BR04-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR04 SYLHET BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.4.0/24  Gateway: 10.1.4.1
+! Primary WAN: 172.16.4.0/30  (to HQ-EDGE-R1)
+! Backup  WAN: 172.16.104.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR04-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR04-LAN-SYLHET
+ ip address 10.1.4.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.4.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- Backup WAN Link (higher OSPF cost) ---
+interface Serial0/0/1
+ description WAN-BACKUP-TO-HQ
+ ip address 172.16.104.2 255.255.255.252
+ ip ospf cost 100
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.4.1
+ network 10.1.4.0 0.0.0.255 area 0
+ network 172.16.4.0 0.0.0.3 area 0
+ network 172.16.104.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR04-SECURITY
+ remark === Branch SYLHET Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.4.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.4.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.4.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.4.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.4.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.4.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.4.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.4.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.4.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.4.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.4.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR04-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR04 SYLHET
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 04 ACCESS SWITCH (BR04-SW)
+### FILE: BR04-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR04 SYLHET ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR04-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR04-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR04-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR04-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR04-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR04-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR04-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR04-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.4.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.4.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR04-SW SYLHET | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 05 ROUTER (BR05-R)
+### FILE: BR05-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR05 BARISHAL BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.5.0/24  Gateway: 10.1.5.1
+! Primary WAN: 172.16.5.0/30  (to HQ-EDGE-R1)
+! Backup  WAN: 172.16.105.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR05-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR05-LAN-BARISHAL
+ ip address 10.1.5.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.5.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- Backup WAN Link (higher OSPF cost) ---
+interface Serial0/0/1
+ description WAN-BACKUP-TO-HQ
+ ip address 172.16.105.2 255.255.255.252
+ ip ospf cost 100
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.5.1
+ network 10.1.5.0 0.0.0.255 area 0
+ network 172.16.5.0 0.0.0.3 area 0
+ network 172.16.105.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR05-SECURITY
+ remark === Branch BARISHAL Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.5.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.5.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.5.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.5.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.5.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.5.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.5.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.5.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.5.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.5.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.5.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR05-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR05 BARISHAL
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 05 ACCESS SWITCH (BR05-SW)
+### FILE: BR05-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR05 BARISHAL ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR05-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR05-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR05-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR05-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR05-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR05-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR05-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR05-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.5.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.5.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR05-SW BARISHAL | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 06 ROUTER (BR06-R)
+### FILE: BR06-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR06 RANGPUR BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.6.0/24  Gateway: 10.1.6.1
+! Primary WAN: 172.16.6.0/30  (to HQ-EDGE-R1)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR06-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR06-LAN-RANGPUR
+ ip address 10.1.6.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.6.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.6.1
+ network 10.1.6.0 0.0.0.255 area 0
+ network 172.16.6.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR06-SECURITY
+ remark === Branch RANGPUR Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.6.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.6.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.6.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.6.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.6.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.6.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.6.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.6.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.6.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.6.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.6.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR06-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR06 RANGPUR
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 06 ACCESS SWITCH (BR06-SW)
+### FILE: BR06-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR06 RANGPUR ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR06-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR06-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR06-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR06-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR06-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR06-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR06-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR06-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.6.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.6.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR06-SW RANGPUR | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 07 ROUTER (BR07-R)
+### FILE: BR07-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR07 MYMENSINGH BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.7.0/24  Gateway: 10.1.7.1
+! Primary WAN: 172.16.7.0/30  (to HQ-EDGE-R1)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR07-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR07-LAN-MYMENSINGH
+ ip address 10.1.7.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.7.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.7.1
+ network 10.1.7.0 0.0.0.255 area 0
+ network 172.16.7.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR07-SECURITY
+ remark === Branch MYMENSINGH Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.7.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.7.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.7.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.7.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.7.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.7.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.7.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.7.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.7.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.7.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.7.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR07-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR07 MYMENSINGH
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 07 ACCESS SWITCH (BR07-SW)
+### FILE: BR07-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR07 MYMENSINGH ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR07-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR07-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR07-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR07-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR07-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR07-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR07-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR07-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.7.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.7.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR07-SW MYMENSINGH | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 08 ROUTER (BR08-R)
+### FILE: BR08-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR08 COMILLA BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.8.0/24  Gateway: 10.1.8.1
+! Primary WAN: 172.16.8.0/30  (to HQ-EDGE-R1)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR08-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR08-LAN-COMILLA
+ ip address 10.1.8.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.8.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.8.1
+ network 10.1.8.0 0.0.0.255 area 0
+ network 172.16.8.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR08-SECURITY
+ remark === Branch COMILLA Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.8.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.8.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.8.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.8.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.8.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.8.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.8.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.8.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.8.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.8.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.8.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR08-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR08 COMILLA
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 08 ACCESS SWITCH (BR08-SW)
+### FILE: BR08-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR08 COMILLA ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR08-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR08-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR08-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR08-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR08-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR08-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR08-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR08-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.8.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.8.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR08-SW COMILLA | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 09 ROUTER (BR09-R)
+### FILE: BR09-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR09 GAZIPUR BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.9.0/24  Gateway: 10.1.9.1
+! Primary WAN: 172.16.9.0/30  (to HQ-EDGE-R1)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR09-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR09-LAN-GAZIPUR
+ ip address 10.1.9.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.9.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.9.1
+ network 10.1.9.0 0.0.0.255 area 0
+ network 172.16.9.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR09-SECURITY
+ remark === Branch GAZIPUR Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.9.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.9.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.9.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.9.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.9.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.9.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.9.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.9.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.9.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.9.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.9.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR09-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR09 GAZIPUR
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 09 ACCESS SWITCH (BR09-SW)
+### FILE: BR09-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR09 GAZIPUR ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR09-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR09-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR09-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR09-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR09-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR09-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR09-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR09-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.9.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.9.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR09-SW GAZIPUR | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 10 ROUTER (BR10-R)
+### FILE: BR10-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR10 NARAYANGANJ BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.10.0/24  Gateway: 10.1.10.1
+! Primary WAN: 172.16.10.0/30  (to HQ-EDGE-R1)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR10-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR10-LAN-NARAYANGANJ
+ ip address 10.1.10.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.10.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.10.1
+ network 10.1.10.0 0.0.0.255 area 0
+ network 172.16.10.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR10-SECURITY
+ remark === Branch NARAYANGANJ Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.10.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.10.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.10.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.10.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.10.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.10.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.10.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.10.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.10.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.10.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.10.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR10-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR10 NARAYANGANJ
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 10 ACCESS SWITCH (BR10-SW)
+### FILE: BR10-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR10 NARAYANGANJ ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR10-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR10-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR10-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR10-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR10-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR10-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR10-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR10-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.10.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.10.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR10-SW NARAYANGANJ | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 11 ROUTER (BR11-R)
+### FILE: BR11-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR11 BOGRA BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.11.0/24  Gateway: 10.1.11.1
+! Primary WAN: 172.16.11.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR11-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR11-LAN-BOGRA
+ ip address 10.1.11.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.11.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.11.1
+ network 10.1.11.0 0.0.0.255 area 0
+ network 172.16.11.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR11-SECURITY
+ remark === Branch BOGRA Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.11.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.11.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.11.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.11.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.11.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.11.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.11.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.11.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.11.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.11.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.11.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR11-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR11 BOGRA
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 11 ACCESS SWITCH (BR11-SW)
+### FILE: BR11-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR11 BOGRA ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR11-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR11-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR11-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR11-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR11-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR11-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR11-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR11-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.11.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.11.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR11-SW BOGRA | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 12 ROUTER (BR12-R)
+### FILE: BR12-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR12 COXS-BAZAR BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.12.0/24  Gateway: 10.1.12.1
+! Primary WAN: 172.16.12.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR12-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR12-LAN-COXS-BAZAR
+ ip address 10.1.12.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.12.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.12.1
+ network 10.1.12.0 0.0.0.255 area 0
+ network 172.16.12.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR12-SECURITY
+ remark === Branch COXS-BAZAR Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.12.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.12.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.12.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.12.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.12.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.12.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.12.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.12.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.12.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.12.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.12.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR12-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR12 COXS-BAZAR
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 12 ACCESS SWITCH (BR12-SW)
+### FILE: BR12-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR12 COXS-BAZAR ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR12-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR12-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR12-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR12-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR12-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR12-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR12-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR12-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.12.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.12.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR12-SW COXS-BAZAR | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 13 ROUTER (BR13-R)
+### FILE: BR13-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR13 JESSORE BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.13.0/24  Gateway: 10.1.13.1
+! Primary WAN: 172.16.13.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR13-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR13-LAN-JESSORE
+ ip address 10.1.13.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.13.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.13.1
+ network 10.1.13.0 0.0.0.255 area 0
+ network 172.16.13.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR13-SECURITY
+ remark === Branch JESSORE Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.13.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.13.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.13.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.13.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.13.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.13.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.13.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.13.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.13.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.13.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.13.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR13-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR13 JESSORE
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 13 ACCESS SWITCH (BR13-SW)
+### FILE: BR13-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR13 JESSORE ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR13-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR13-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR13-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR13-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR13-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR13-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR13-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR13-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.13.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.13.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR13-SW JESSORE | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 14 ROUTER (BR14-R)
+### FILE: BR14-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR14 DINAJPUR BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.14.0/24  Gateway: 10.1.14.1
+! Primary WAN: 172.16.14.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR14-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR14-LAN-DINAJPUR
+ ip address 10.1.14.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.14.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.14.1
+ network 10.1.14.0 0.0.0.255 area 0
+ network 172.16.14.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR14-SECURITY
+ remark === Branch DINAJPUR Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.14.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.14.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.14.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.14.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.14.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.14.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.14.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.14.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.14.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.14.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.14.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR14-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR14 DINAJPUR
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 14 ACCESS SWITCH (BR14-SW)
+### FILE: BR14-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR14 DINAJPUR ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR14-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR14-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR14-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR14-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR14-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR14-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR14-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR14-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.14.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.14.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR14-SW DINAJPUR | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 15 ROUTER (BR15-R)
+### FILE: BR15-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR15 TANGAIL BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.15.0/24  Gateway: 10.1.15.1
+! Primary WAN: 172.16.15.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR15-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR15-LAN-TANGAIL
+ ip address 10.1.15.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.15.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.15.1
+ network 10.1.15.0 0.0.0.255 area 0
+ network 172.16.15.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR15-SECURITY
+ remark === Branch TANGAIL Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.15.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.15.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.15.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.15.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.15.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.15.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.15.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.15.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.15.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.15.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.15.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR15-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR15 TANGAIL
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 15 ACCESS SWITCH (BR15-SW)
+### FILE: BR15-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR15 TANGAIL ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR15-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR15-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR15-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR15-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR15-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR15-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR15-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR15-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.15.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.15.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR15-SW TANGAIL | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 16 ROUTER (BR16-R)
+### FILE: BR16-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR16 BRAHMANBARIA BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.16.0/24  Gateway: 10.1.16.1
+! Primary WAN: 172.16.16.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR16-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR16-LAN-BRAHMANBARIA
+ ip address 10.1.16.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.16.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.16.1
+ network 10.1.16.0 0.0.0.255 area 0
+ network 172.16.16.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR16-SECURITY
+ remark === Branch BRAHMANBARIA Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.16.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.16.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.16.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.16.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.16.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.16.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.16.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.16.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.16.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.16.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.16.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR16-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR16 BRAHMANBARIA
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 16 ACCESS SWITCH (BR16-SW)
+### FILE: BR16-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR16 BRAHMANBARIA ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR16-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR16-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR16-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR16-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR16-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR16-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR16-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR16-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.16.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.16.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR16-SW BRAHMANBARIA | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 17 ROUTER (BR17-R)
+### FILE: BR17-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR17 NARSINGDI BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.17.0/24  Gateway: 10.1.17.1
+! Primary WAN: 172.16.17.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR17-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR17-LAN-NARSINGDI
+ ip address 10.1.17.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.17.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.17.1
+ network 10.1.17.0 0.0.0.255 area 0
+ network 172.16.17.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR17-SECURITY
+ remark === Branch NARSINGDI Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.17.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.17.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.17.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.17.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.17.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.17.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.17.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.17.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.17.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.17.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.17.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR17-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR17 NARSINGDI
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 17 ACCESS SWITCH (BR17-SW)
+### FILE: BR17-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR17 NARSINGDI ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR17-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR17-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR17-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR17-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR17-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR17-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR17-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR17-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.17.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.17.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR17-SW NARSINGDI | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 18 ROUTER (BR18-R)
+### FILE: BR18-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR18 SAVAR BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.18.0/24  Gateway: 10.1.18.1
+! Primary WAN: 172.16.18.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR18-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR18-LAN-SAVAR
+ ip address 10.1.18.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.18.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.18.1
+ network 10.1.18.0 0.0.0.255 area 0
+ network 172.16.18.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR18-SECURITY
+ remark === Branch SAVAR Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.18.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.18.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.18.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.18.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.18.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.18.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.18.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.18.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.18.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.18.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.18.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR18-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR18 SAVAR
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 18 ACCESS SWITCH (BR18-SW)
+### FILE: BR18-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR18 SAVAR ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR18-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR18-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR18-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR18-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR18-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR18-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR18-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR18-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.18.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.18.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR18-SW SAVAR | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 19 ROUTER (BR19-R)
+### FILE: BR19-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR19 TONGI BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.19.0/24  Gateway: 10.1.19.1
+! Primary WAN: 172.16.19.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR19-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR19-LAN-TONGI
+ ip address 10.1.19.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.19.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.19.1
+ network 10.1.19.0 0.0.0.255 area 0
+ network 172.16.19.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR19-SECURITY
+ remark === Branch TONGI Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.19.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.19.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.19.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.19.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.19.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.19.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.19.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.19.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.19.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.19.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.19.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR19-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR19 TONGI
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 19 ACCESS SWITCH (BR19-SW)
+### FILE: BR19-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR19 TONGI ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR19-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR19-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR19-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR19-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR19-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR19-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR19-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR19-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.19.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.19.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR19-SW TONGI | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 20 ROUTER (BR20-R)
+### FILE: BR20-R.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR20 FARIDPUR BRANCH ROUTER
+! Model: Cisco 2911 ISR | OSPF Area 0
+! LAN: 10.1.20.0/24  Gateway: 10.1.20.1
+! Primary WAN: 172.16.20.0/30  (to HQ-EDGE-R2)
+! PCs: 5 wired + wireless clients via AP
+! ================================================================
+enable
+configure terminal
+
+hostname BR20-R
+no ip domain-lookup
+ip domain-name globaltech.local
+service timestamps log datetime msec
+service timestamps debug datetime msec
+service password-encryption
+
+username admin privilege 15 secret GlobalTech@2026Admin
+enable secret GlobalTech@2026Enable
+
+! --- LAN Interface (Wired + Wireless AP share this subnet) ---
+interface GigabitEthernet0/0
+ description BR20-LAN-FARIDPUR
+ ip address 10.1.20.1 255.255.255.0
+ ip helper-address 10.10.70.10
+ no shutdown
+
+! --- Primary WAN Link ---
+interface Serial0/0/0
+ description WAN-PRIMARY-TO-HQ
+ ip address 172.16.20.2 255.255.255.252
+ ip ospf cost 10
+ no shutdown
+
+! --- OSPF Dynamic Routing ---
+router ospf 10
+ router-id 10.1.20.1
+ network 10.1.20.0 0.0.0.255 area 0
+ network 172.16.20.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+
+! --- Security ACL ---
+ip access-list extended ACL-BR20-SECURITY
+ remark === Branch FARIDPUR Outbound Security Policy ===
+ remark DENY access to Management VLAN
+ deny   ip 10.1.20.0 0.0.0.255 10.10.60.0 0.0.0.255
+ remark PERMIT DNS (TCP+UDP 53)
+ permit tcp 10.1.20.0 0.0.0.255 host 10.10.70.20 eq 53
+ permit udp 10.1.20.0 0.0.0.255 host 10.10.70.20 eq 53
+ remark PERMIT DHCP
+ permit udp 10.1.20.0 0.0.0.255 host 10.10.70.10 eq 67
+ remark PERMIT HTTP/HTTPS to Web Server
+ permit tcp 10.1.20.0 0.0.0.255 host 10.10.70.50 eq 80
+ permit tcp 10.1.20.0 0.0.0.255 host 10.10.70.50 eq 443
+ remark PERMIT FTP to File Server
+ permit tcp 10.1.20.0 0.0.0.255 host 10.10.70.30 eq 21
+ permit tcp 10.1.20.0 0.0.0.255 host 10.10.70.30 eq 20
+ remark PERMIT SMTP/POP3 to Mail Server
+ permit tcp 10.1.20.0 0.0.0.255 host 10.10.70.40 eq 25
+ permit tcp 10.1.20.0 0.0.0.255 host 10.10.70.40 eq 110
+ remark PERMIT NTP
+ permit udp 10.1.20.0 0.0.0.255 host 10.10.70.60 eq 123
+ remark PERMIT ICMP for troubleshooting
+ permit icmp any any
+ remark PERMIT all other traffic
+ permit ip any any
+exit
+interface GigabitEthernet0/0
+ ip access-group ACL-BR20-SECURITY in
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ logging synchronous
+exit
+line con 0
+ password GlobalTech@Console
+ login
+ logging synchronous
+exit
+
+banner motd #
+==================================================================
+  GLOBALTECH INDUSTRIES LTD. - BR20 FARIDPUR
+  UNAUTHORIZED ACCESS IS PROHIBITED AND STRICTLY MONITORED!
+  All activities are logged and audited.
+==================================================================
+#
+
+end
+write memory
+
+
+
+##############################################################################
+### BRANCH 20 ACCESS SWITCH (BR20-SW)
+### FILE: BR20-SW.cfg
+##############################################################################
+! ================================================================
+! GLOBALTECH INDUSTRIES LTD. - BR20 FARIDPUR ACCESS SWITCH
+! Model: Cisco 2960 (Layer 2)
+! Fa0/1-Fa0/5 = Wired PCs | Fa0/6 = Wireless AP | Gig0/1 = Uplink
+! Port Security: Sticky MAC, max 2, violation restrict
+! ================================================================
+enable
+configure terminal
+
+hostname BR20-SW
+no ip domain-lookup
+service password-encryption
+
+! --- Uplink to Branch Router ---
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR20-R
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Wired PC Ports (5 PCs) with Port Security ---
+interface FastEthernet0/1
+ description BR20-PC1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/2
+ description BR20-PC2
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/3
+ description BR20-PC3
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description BR20-PC4
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description BR20-PC5
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! --- Wireless Access Point Port ---
+interface FastEthernet0/6
+ description BR20-WIRELESS-AP
+ switchport mode access
+ spanning-tree portfast
+ no shutdown
+
+! --- Disable Unused Ports (Security Hardening) ---
+interface range FastEthernet0/7-24
+ description UNUSED-DISABLED
+ shutdown
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security violation shutdown
+
+interface GigabitEthernet0/2
+ description UNUSED
+ shutdown
+
+! --- Management SVI ---
+interface Vlan1
+ ip address 10.1.20.250 255.255.255.0
+ no shutdown
+ip default-gateway 10.1.20.1
+
+! --- SSH Management ---
+ip domain-name globaltech.local
+username admin privilege 15 secret GlobalTech@2026Admin
+crypto key generate rsa modulus 2048
+ip ssh version 2
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+exit
+line con 0
+ password GlobalTech@Console
+ login
+exit
+
+! --- NTP and Syslog ---
+logging 10.10.70.60
+ntp server 10.10.70.60
+
+banner motd #
+==================================================================
+  GLOBALTECH - BR20-SW FARIDPUR | PORT SECURITY ENABLED
+  Unauthorized port connections are logged and restricted.
+==================================================================
+#
+
+end
+write memory
+
+
